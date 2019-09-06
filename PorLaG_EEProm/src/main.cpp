@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 int addr = 0;
-int zero = 32;
+// int zero = 32;
 byte value;
 
 void save(void){
