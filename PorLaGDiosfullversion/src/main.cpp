@@ -7,13 +7,13 @@ char cmd[MAX_NUM_CHARS];
 boolean cmd_complete = false;
 int addr = 0;
 byte value;
-int greenPin = 54;
-int redPin = 55;
+int greenPin = 51;
+int redPin = 53;
 
 long previousMillis = 0;        // will store last time LED was updated
 long interval = 1000;           // interval at which to blink (milliseconds)
 
-#define Password_Length 8
+#define Password_Length 5
 char Data[Password_Length];
 char Master[Password_Length] = "1235";
 byte data_count = 0, master_count = 0;
@@ -52,7 +52,7 @@ use last number to sync or not SYNC
 
 
 for example: 0112105#
-lamp 01 till 12 at speed 10s delay, sync mode 5;
+lamp 00 till 12 at speed 10s delay, sync mode 5;
 so you get 10 options of sync modes.
 in EEPROM:
 BUT EEPROM values go up to 255 :-1:
@@ -61,6 +61,7 @@ bc if value is 249 is okay
 but if value is 259 is not okay :(
 
 lamp  speed  mode
+00    10     5
 01    10     5
 02 10 5
 03 10 5
@@ -129,6 +130,8 @@ void process_command() { //handler for input
     Serial.println("lamp:" + lamp);
     Serial.println("speed:" + speed);
     // Serial.println("mode:" + mode);
+    // Set pin no.## to ###
+    // Set addr ## to ###
   } else {
     String lampbegin = readString.substring(0, 2);
     String lampend = readString.substring(2, 4);
@@ -165,38 +168,56 @@ void green(int wait) {
   digitalWrite(greenPin, HIGH);
   delay(wait);
   digitalWrite(greenPin, LOW);
+  delay(wait);
+
 }
 
 void red(int wait){
   digitalWrite(redPin, HIGH);
   delay(wait);
   digitalWrite(redPin, LOW);
-}
+  delay(wait);
 
-void passwordCheck(void){
-  if(data_count == Password_Length-1){
-    if(!strcmp(Data, Master)){
-      // lcd.print("Correct"); // USe led indicator
-      green(50);
-      green(50);
-      green(50);
-      }
-    else{
-      // lcd.print("Incorrect"); //USE led indicator
-      delay(1000);
-      }
-    clearData();
-  }
 }
+//----------------------------------------------------------------------------------
+void passwordCheck(void){
+  Serial.print("Enter Password:\n");
+
+    customKey = customKeypad.getKey();
+    if (customKey){
+      Data[data_count] = customKey;
+      data_count++;
+    }
+    if(data_count == Password_Length-1){
+      if(!strcmp(Data, Master)){
+        green(50); // flash green LED 3 times to confirm password
+        green(50);
+        green(50);
+        green(50);
+        Serial.print("Correct");
+        //------------------------------------------------------------------------------Correct password
+        Pass_is_good = true;
+        }
+      else{
+        //------------------------------------------------------------------------------Incorrect passwords
+        red(50); // flash red LED 3 times to deny password
+        red(50); // also indicator that password is needed
+        red(50);
+        Serial.print("incorrect");
+        Pass_is_good = false;
+        }
+      clearData();
+    }
+}
+//----------------------------------------------------------------------------------
 
 void loop() {
-  if(data_count == Password_Length-1){
-    if(!strcmp(Data, Master)){
-      // lcd.print("Correct"); // USe led indicator
-      green(50); // flash 3 times to confirm password
-      green(50);
-      green(50);
-      customKey = customKeypad.getKey();
+  passwordCheck();
+  customKey = customKeypad.getKey();
+  if (customKey){
+    cmd[data_count] = customKey;
+    data_count++;
+  }
 
       if (customKey){
         Serial.print(customKey); //print input
@@ -206,18 +227,5 @@ void loop() {
         process_command();
         clearData();
       }
-      if (customKey){
-        cmd[data_count] = customKey;
-        data_count++;
-      }
-      }
-    else{
-      // lcd.print("Incorrect"); //USE led indicator
-      delay(1000);
-      red(50); // flash 3 times to deny password
-      red(50); // also indicator that password is needed
-      red(50);
-      }
-    clearData();
-  }
+
 }
