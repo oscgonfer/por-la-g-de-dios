@@ -1,9 +1,12 @@
 -I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/include
 -I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/src
+-I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/lib/Password
 -I/home/j0r15/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/EEPROM/src
--I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/.pio/libdeps/megaatmega2560/Keypad_ID165/src
+-I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/lib/Keypad
+-I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/lib/Keypad/utility
 -I/home/j0r15/.platformio/packages/framework-arduinoavr/cores/arduino
 -I/home/j0r15/.platformio/packages/framework-arduinoavr/variants/mega
+-I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/.pio/libdeps/megaatmega2560/Keypad_ID165/src
 -I/home/j0r15/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/HID/src
 -I/home/j0r15/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SPI/src
 -I/home/j0r15/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/SoftwareSerial/src
