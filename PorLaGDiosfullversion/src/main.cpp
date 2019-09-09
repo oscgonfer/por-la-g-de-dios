@@ -23,6 +23,7 @@ const byte ROWS = 4;
 const byte COLS = 3;
 
 char hexaKeys[ROWS][COLS] = {
+
   {'1', '2', '3'},
   {'4', '5', '6'},
   {'7', '8', '9'},
@@ -162,6 +163,7 @@ void setup(){
   //printlastsaved();
   //CHECK String readString = "##";
   read(); // should load previous config
+  Serial.print("Enter Password:\n");
 }
 
 void green(int wait) {
@@ -181,32 +183,32 @@ void red(int wait){
 }
 //----------------------------------------------------------------------------------
 void passwordCheck(void){
-  Serial.print("Enter Password:\n");
-
     customKey = customKeypad.getKey();
     if (customKey){
       Data[data_count] = customKey;
       data_count++;
     }
+
     if(data_count == Password_Length-1){
       if(!strcmp(Data, Master)){
         green(50); // flash green LED 3 times to confirm password
         green(50);
         green(50);
-        green(50);
         Serial.print("Correct");
         //------------------------------------------------------------------------------Correct password
         Pass_is_good = true;
+        clearData();
         }
-      else{
-        //------------------------------------------------------------------------------Incorrect passwords
+
+      else {
         red(50); // flash red LED 3 times to deny password
         red(50); // also indicator that password is needed
         red(50);
         Serial.print("incorrect");
+        //------------------------------------------------------------------------------Incorrect passwords
         Pass_is_good = false;
+        clearData();
         }
-      clearData();
     }
 }
 //----------------------------------------------------------------------------------
@@ -214,18 +216,18 @@ void passwordCheck(void){
 void loop() {
   passwordCheck();
   customKey = customKeypad.getKey();
-  if (customKey){
-    cmd[data_count] = customKey;
-    data_count++;
+  if (Pass_is_good = true) {
+    if (customKey) {
+      cmd[data_count] = customKey;
+      data_count++;
+    }
+    if (customKey) {
+      Serial.print(customKey); //print input
+    }
+    if(data_count == MAX_NUM_CHARS || customKey == '#') {
+      // Serial.println(cmd);
+      process_command();
+      clearData();
+    }
   }
-
-      if (customKey){
-        Serial.print(customKey); //print input
-      }
-      if(data_count == MAX_NUM_CHARS || customKey == '#') {
-        // Serial.println(cmd);
-        process_command();
-        clearData();
-      }
-
 }
