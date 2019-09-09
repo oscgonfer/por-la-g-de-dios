@@ -10,6 +10,9 @@ byte value;
 int greenPin = 54;
 int redPin = 55;
 
+long previousMillis = 0;        // will store last time LED was updated
+long interval = 1000;           // interval at which to blink (milliseconds)
+
 #define Password_Length 8
 char Data[Password_Length];
 char Master[Password_Length] = "1235";
@@ -46,11 +49,17 @@ SYNC AND NOT: Concept
 Input is lamp,speed,
 speed <30 is 0-30s
 use last number to sync or not SYNC
-for example: 0112105#
 
+
+for example: 0112105#
 lamp 01 till 12 at speed 10s delay, sync mode 5;
 so you get 10 options of sync modes.
 in EEPROM:
+BUT EEPROM values go up to 255 :-1:
+that means that mode work till the speed around 24
+bc if value is 249 is okay
+but if value is 259 is not okay :(
+
 lamp  speed  mode
 01    10     5
 02 10 5
@@ -109,9 +118,6 @@ void clearData(){ //resets string of keypad input
   return;
 }
 
-/*
- * Checks received command and calls corresponding functions.
- */
 void process_command() { //handler for input
   String readString2 = cmd;
   readString2.replace("#","");
@@ -184,20 +190,34 @@ void passwordCheck(void){
 }
 
 void loop() {
-passwordCheck();
-  customKey = customKeypad.getKey();
+  if(data_count == Password_Length-1){
+    if(!strcmp(Data, Master)){
+      // lcd.print("Correct"); // USe led indicator
+      green(50); // flash 3 times to confirm password
+      green(50);
+      green(50);
+      customKey = customKeypad.getKey();
 
-  if (customKey){
-    Serial.print(customKey); //print input
-  }
-  if(data_count == MAX_NUM_CHARS || customKey == '#') {
-    // Serial.println(cmd);
-    process_command();
+      if (customKey){
+        Serial.print(customKey); //print input
+      }
+      if(data_count == MAX_NUM_CHARS || customKey == '#') {
+        // Serial.println(cmd);
+        process_command();
+        clearData();
+      }
+      if (customKey){
+        cmd[data_count] = customKey;
+        data_count++;
+      }
+      }
+    else{
+      // lcd.print("Incorrect"); //USE led indicator
+      delay(1000);
+      red(50); // flash 3 times to deny password
+      red(50); // also indicator that password is needed
+      red(50);
+      }
     clearData();
   }
-  if (customKey){
-    cmd[data_count] = customKey;
-    data_count++;
-    }
-
 }
