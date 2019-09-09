@@ -30,7 +30,7 @@ char keys[ROWS][COLS] = {
 byte rowPins[ROWS] = {52, 50, 48, 46};
 byte colPins[COLS] = {44, 42, 40};
 
-Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
+Keypad keypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
 
 
 /*
@@ -51,30 +51,6 @@ use last number to sync or not SYNC
 for example: 0112105#
 lamp 00 till 12 at speed 10s delay, sync mode 5;
 so you get 10 options of sync modes.
-in EEPROM:
-BUT EEPROM values go up to 255 :-1:
-that means that mode work till the speed around 24
-bc if value is 249 is okay
-but if value is 259 is not okay :(
-
-
-speed < 25 ; mode 1-4
-speed > 25 ; mode
-
-lamp  speed  mode
-00    10     5
-01    10     5
-02 10 5
-03 10 5
-04 10 5
-05 10 5
-06 10 5
-07 10 5
-08 10 5
-09 10 5
-10 10 5
-11 10 5
-12 10 5
 Have a nice day.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 )=====";
@@ -161,9 +137,9 @@ void displayCodeEntryScreen()
 
 
 void green(int wait) {
-  digitalWrite(greenPin, HIGH);
+  digitalWrite(greenLED, HIGH);
   delay(wait);
-  digitalWrite(greenPin, LOW);
+  digitalWrite(greenLED, LOW);
   delay(wait);
 }
 
@@ -174,9 +150,9 @@ void unlockdoor(){ //controls servo that locks the door
 }
 
 void red(int wait) {
-  digitalWrite(redPin, HIGH);
+  digitalWrite(redLED, HIGH);
   delay(wait);
-  digitalWrite(redPin, LOW);
+  digitalWrite(redLED, LOW);
   delay(wait);
 }
 
@@ -245,7 +221,7 @@ void setup() {
 
 void loop() {
   keypad.getKey();
-  command = customKeypad.getKey();
+  command = keypad.getKey();
 
   // if(data_count == MAX_NUM_CHARS || command == '#') {
   //   // Serial.println(cmd);
