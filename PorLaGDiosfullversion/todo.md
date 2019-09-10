@@ -17,6 +17,11 @@
 
 
 # Storing Concept
+Mode 1: normal
+Mode 2: flash alternatively
+Mode 3: sync with all modes 3 lamps
+
+
 in EEPROM:
 lamp(addr)  speed(value)
 00          10
@@ -34,8 +39,8 @@ lamp(addr)  speed(value)
 12          10
 
 lamp(addr)  mode(value)
-101
-102
+101         2
+102         2
 103
 104
 105

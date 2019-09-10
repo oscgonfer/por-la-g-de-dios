@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Keypad.h"
+#include "Key.h"
 #include "Password.h"
 #include <EEPROM.h>
 #define MAX_NUM_CHARS 8
@@ -30,7 +31,7 @@ char keys[ROWS][COLS] = {
 byte rowPins[ROWS] = {52, 50, 48, 46};
 byte colPins[COLS] = {44, 42, 40};
 
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+Keypad customKeypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 
 /*
@@ -62,7 +63,7 @@ void printUsage() {
 void save(void) { //updates addr with values 0-255
     EEPROM.update(addr, value);
     addr = addr + 1;
-    if (addr == 16) {
+    if (addr == 200) {
       addr = 0;
     }
 }
@@ -85,6 +86,13 @@ void read(void) { //reads everything from EEPROM
   if (addr == EEPROM.length()) {
     addr = 0;
   }
+}
+
+void clearData(){
+  while(data_count !=0){
+    cmd[data_count--] = 0;
+  }
+  return;
 }
 
 
@@ -122,19 +130,12 @@ void process_command(void) { //handler for input
 }
 
 
-
-void displayCodeEntryScreen()
-{
-  password.reset();
-  Serial.println("Enter Code:");
-  keypad.addEventListener(keypadEvent()); //add an event listener for this keypad
-  //setup and turn off both LEDs
-  pinMode(redLED, OUTPUT);
-  pinMode(greenLED, OUTPUT);
+void red(int wait) {
+  digitalWrite(redLED, HIGH);
+  delay(wait);
   digitalWrite(redLED, LOW);
-  digitalWrite(greenLED, LOW);
+  delay(wait);
 }
-
 
 void green(int wait) {
   digitalWrite(greenLED, HIGH);
@@ -143,74 +144,11 @@ void green(int wait) {
   delay(wait);
 }
 
-void unlockdoor(){ //controls servo that locks the door
-  // myservo.write(90);
-  digitalWrite(greenLED, HIGH);
-  delay(5000);
-}
-
-void red(int wait) {
-  digitalWrite(redLED, HIGH);
-  delay(wait);
-  digitalWrite(redLED, LOW);
-  delay(wait);
-}
-
-void checkPassword(){
-  if (password.evaluate()){
-    digitalWrite(greenLED, HIGH);
-    delay(30);
-    // lcd.print("Acces Granted");
-    // lcd.print("Welcome");
-    unlockdoor();
-    delay(2500);
-    displayCodeEntryScreen();
-  }
-  else{
-    loop(); {
-      red(50);
-      red(50);
-      red(50);
-    }
-    delay(10);
-    // lcd.print("Acces Denied");
-    delay(2500);
-    displayCodeEntryScreen();
-  }
-}
-
-//take care of some special events
-void keypadEvent(keypadEvent eKey){
-  switch (keypad.getState()){
-  case PRESSED:
-    // lcd.print(eKey);
-    switch (eKey){
-    case '#':
-      checkPassword();
-      break;
-    case '*':
-         displayCodeEntryScreen(); break;
-    default:
-      password.append(eKey);
-    }
- switch (keypad.getState()){
-   case PRESSED:
-   switch (eKey){
-   case 'D': displayCodeEntryScreen();
-    }
-  }
-  }
-}
-
-
 
 
 //----------SETUP-&-LOOP-----------------------------------------------------------------------
 void setup() {
   Serial.begin(9600);
-  keypad.begin(makeKeymap(keys));
-  keypad.setDebounceTime(50);
-  keypad.addEventListener(keypadEvent()); //add an event listener for this keypad
   pinMode(redLED, OUTPUT);
   pinMode(greenLED, OUTPUT);
   digitalWrite(redLED, LOW);
@@ -220,6 +158,20 @@ void setup() {
 }
 
 void loop() {
-  keypad.getKey();
-  command = keypad.getKey();
+  customKey = customKeypad.getKey();
+
+  if (customKey){
+    Serial.print(customKey); //print input
+  }
+
+  if(data_count == MAX_NUM_CHARS || customKey == '#') {
+    // Serial.println(cmd);
+    process_command();
+    clearData();
+  }
+
+  if (customKey){
+    cmd[data_count] = customKey;
+    data_count++;
+    }
 }

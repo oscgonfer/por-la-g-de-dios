@@ -2,7 +2,9 @@
 int greenLED = 22;
 int redLED = 23;
 
+LiquidCrystal lcd(13, 12, 11, 10, 9, 8, 7);
 Password password = Password( "4155" );
+int currentPosition = 0;
 const byte ROWS = 4; // Four rows
 const byte COLS = 4; // Four columns
 // Define the Keymap
@@ -29,11 +31,13 @@ byte colPins[COLS] = {
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 void setup(){
+  // lcd.begin(16, 2);
   Serial.begin(9600);
   keypad.setDebounceTime(50);
+  displayCodeEntryScreen();
   keypad.addEventListener(keypadEvent); //add an event listener for this keypad
-  //myservo.attach(2);
-  //myservo.write(180);
+  // myservo.attach(2);
+  // myservo.write(180);
   //setup and turn off both LEDs
   pinMode(redLED, OUTPUT);
   pinMode(greenLED, OUTPUT);
@@ -44,7 +48,10 @@ void setup(){
 void displayCodeEntryScreen()
 {
   password.reset();
+  // lcd.clear();
+  // lcd.setCursor(2, 0);
   // lcd.print("Enter Code:");
+  // lcd.setCursor(0,1);
   keypad.addEventListener(keypadEvent); //add an event listener for this keypad
   //setup and turn off both LEDs
   pinMode(redLED, OUTPUT);
@@ -54,15 +61,14 @@ void displayCodeEntryScreen()
 }
 
 void loop(){
-    keypad.getKey();
+  keypad.getKey();
 }
 
 //take care of some special events
 void keypadEvent(KeypadEvent eKey){
   switch (keypad.getState()){
   case PRESSED:
-    // lcd.print(eKey);
-    Serial.println(eKey);
+    lcd.print(eKey);
     switch (eKey){
     case '#':
       checkPassword();
@@ -75,7 +81,7 @@ void keypadEvent(KeypadEvent eKey){
  switch (keypad.getState()){
    case PRESSED:
    switch (eKey){
-   case 'D': myservo.write(180); displayCodeEntryScreen();
+   case 'D': displayCodeEntryScreen();
     }
   }
   }
@@ -84,8 +90,11 @@ void keypadEvent(KeypadEvent eKey){
 void checkPassword(){
   if (password.evaluate()){
     digitalWrite(greenLED, HIGH);
+    // lcd.clear();
     delay(30);
+    // lcd.setCursor(1, 0);
     // lcd.print("Acces Granted");
+    // lcd.setCursor(4, 1);
     // lcd.print("Welcome");
     unlockdoor();
     delay(2500);
@@ -97,8 +106,10 @@ void checkPassword(){
     }
     lcd.clear();
     delay(10);
+    // lcd.setCursor(2, 0);
     // lcd.print("Acces Denied");
     delay(2500);
+    // lcd.clear();
     displayCodeEntryScreen();
   }
 }
@@ -109,7 +120,7 @@ void unlockdoor(){ //controls servo that locks the door
   delay(5000);
 }
 
-void redlight() {
+void redlight(){
 digitalWrite(redLED, HIGH);
 delay(100);
 digitalWrite(redLED, LOW);

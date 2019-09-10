@@ -5,32 +5,12 @@
 
 #define MAX_NUM_CHARS 8
 char customKey;
-char cmd[MAX_NUM_CHARS]; 
+char cmd[MAX_NUM_CHARS];
 boolean cmd_complete = false;
 byte data_count = 0, master_count = 0;
 
-const byte ROWS = 4; 
-const byte COLS = 3; 
-
-int pinMatrix[14][2] = {
-  {0,  0}, // actually read from eeprom
-  {1,  0},
-  {2,  0},
-  {3,  0},
-  {4,  0},
-  {6,  0},
-  {7,  0},
-  {8,  0},
-  {9,  0},
-  {10,  0},
-  {11,  0},
-  {12,  0},
-  {13,  0},
-  {14,  0}
-
-};
-
-
+const byte ROWS = 4;
+const byte COLS = 3;
 
 char hexaKeys[ROWS][COLS] = {
   {'1', '2', '3'},
@@ -40,10 +20,10 @@ char hexaKeys[ROWS][COLS] = {
 };
 
 
-byte rowPins[ROWS] = {52, 50, 48, 46}; 
-byte colPins[COLS] = {44, 42, 40}; 
+byte rowPins[ROWS] = {52, 50, 48, 46};
+byte colPins[COLS] = {44, 42, 40};
 
-Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
 
 
 /*
@@ -64,7 +44,7 @@ void printUsage() {
 
 void clearData(){
   while(data_count !=0){
-    cmd[data_count--] = 0; 
+    cmd[data_count--] = 0;
   }
   return;
 }
@@ -90,7 +70,7 @@ void process_command() {
     Serial.println("lampbegin=" + lampbegin);
     Serial.println("lampend=" + lampend);
     Serial.println("speed=" + speed);
-   }  
+   }
   }
 
 
@@ -111,7 +91,7 @@ void setup(){
 
 void loop() {
   customKey = customKeypad.getKey();
-  
+
   if (customKey){
     Serial.print(customKey); //print input
   }
@@ -124,7 +104,7 @@ void loop() {
 
   if (customKey){
     cmd[data_count] = customKey;
-    data_count++; 
+    data_count++;
     }
 
 }
