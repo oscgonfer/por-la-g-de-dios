@@ -4,7 +4,8 @@
 #include "Password.h"
 #include <EEPROM.h>
 #define MAX_NUM_CHARS 8
-char command;
+char customKey;
+byte data_count = 0, master_count = 0;
 char cmd[MAX_NUM_CHARS];
 boolean cmd_complete = false;
 int addr = 0;
