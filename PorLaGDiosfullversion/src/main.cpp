@@ -3,20 +3,35 @@
 #include "Key.h"
 #include "Password.h"
 #include <EEPROM.h>
+
+//KEYPAD AND COMMAND
 #define MAX_NUM_CHARS 8
 char customKey;
-byte data_count = 0, master_count = 0;
+byte data_count = 0;
 char cmd[MAX_NUM_CHARS];
 boolean cmd_complete = false;
+
+//EEPROM
 int addr = 0;
 byte value;
+
+//INDICATORS
 int greenLED = 51;
 int redLED = 53;
 
+//SSR
+unsigned long previousMillis = 0;        // will store last time LED was updated
+long OnTime = 250;           // milliseconds of on-time
+long OffTime = 750;          // milliseconds of off-time
+int ledState = LOW;             // ledState used to set the LED
+
+//TEST
+int testpin = 45;      // the number of the TEST LED
+
+//NON BLOCKING
 long previousMillis = 0;        // will store last time LED was updated
 long interval = 1000;           // interval at which to blink (milliseconds)
 
-Password password = Password( "4155" );
 const byte ROWS = 4;
 const byte COLS = 3;
 
@@ -96,41 +111,6 @@ void clearData(){
   return;
 }
 
-
-void process_command(void) { //handler for input
-  String readString2 = cmd;
-  readString2.replace("#","");
-  String readString = readString2;
-  if (cmd[MAX_NUM_CHARS] < 6){
-    String lamp = readString.substring(0, 2);
-    String speed = readString.substring(2, 4);
-    // String mode = readString.substring(4, 6);
-    Serial.println("lamp:" + lamp);
-    Serial.println("speed:" + speed);
-    // Serial.println("mode:" + mode);
-    // Set pin no.## to ###
-    // Set addr ## to ###
-  } else {
-    String lampbegin = readString.substring(0, 2);
-    String lampend = readString.substring(2, 4);
-    String speed = readString.substring(4, 6);
-    //String mode = readString.substring(6, 8);
-    Serial.println("lampbegin=" + lampbegin);
-    Serial.println("lampend=" + lampend);
-    Serial.println("speed=" + speed);
-    // Serial.println("mode=" + mode);
-    int lamp0  = atoi(lampbegin.c_str());
-    int lamp1  = atoi(lampend.c_str());
-    for (int lamp = lamp0 ; lamp < lamp1; lamp++){
-      Serial.print("lamp: ");
-      Serial.println(lamp);
-      Serial.print("speed: ");
-      Serial.println(speed);
-    }
-  }
-}
-
-
 void red(int wait) {
   digitalWrite(redLED, HIGH);
   delay(wait);
@@ -145,7 +125,60 @@ void green(int wait) {
   delay(wait);
 }
 
+void process_command(void) { //handler for input
+  String readString2 = cmd;
+  readString2.replace("#","");
+  String readString = readString2;
 
+  if (cmd[MAX_NUM_CHARS] < 4){
+    //Single
+    String lamp = readString.substring(0, 2);
+    String speed = readString.substring(2, 4);
+    // String mode = readString.substring(4, 6);
+    Serial.println("lamp:" + lamp);
+    Serial.println("speed:" + speed);
+    // Serial.println("mode:" + mode);
+    // Set pin no.## to ###
+    // Set addr ## to ###
+  } else if (cmd[MAX_NUM_CHARS] < 6){
+    //Mutli
+    String lampbegin = readString.substring(0, 2);
+    String lampend = readString.substring(2, 4);
+    String speed = readString.substring(4, 6);
+    //String mode = readString.substring(6, 8);
+    Serial.println("lampbegin=" + lampbegin);
+    Serial.println("lampend=" + lampend);
+    Serial.println("speed=" + speed);
+    // Serial.println("mode=" + mode);
+    int lamp0  = atoi(lampbegin.c_str());
+    int lamp1  = atoi(lampend.c_str());
+      for (int lamp = lamp0 ; lamp < lamp1; lamp++){
+        Serial.print("lamp: ");
+        Serial.println(lamp);
+        Serial.print("speed: ");
+        Serial.println(speed);
+      }
+  } else {
+    red(50);
+    red(50);
+    red(50);
+  }
+}
+
+void alternating(void){
+  // check to see if it's time to change the state of the LED
+  unsigned long currentMillis = millis();
+//TODO MAKE VARIABLE/DYNAMIC
+  if ((ledState == HIGH) && (currentMillis - previousMillis >= OnTime)) {
+    ledState = LOW;  // Turn it off
+    previousMillis = currentMillis;  // Remember the time
+    digitalWrite(ledPin, ledState);  // Update the actual LED
+  } else if ((ledState == LOW) && (currentMillis - previousMillis >= OffTime)) {
+    ledState = HIGH;  // turn it on
+    previousMillis = currentMillis;   // Remember the time
+    digitalWrite(ledPin, ledState);	  // Update the actual LED
+  }
+}
 
 //----------SETUP-&-LOOP-----------------------------------------------------------------------
 void setup() {
@@ -155,7 +188,7 @@ void setup() {
   digitalWrite(redLED, LOW);
   digitalWrite(greenLED, LOW);
   printUsage();
-  read(); // should load previous config
+  read(); // should load previous config from eeprom
 }
 
 void loop() {
@@ -175,4 +208,8 @@ void loop() {
     cmd[data_count] = customKey;
     data_count++;
     }
+
+alternating();
+
+
 }
