@@ -208,6 +208,7 @@ void keypadEvent(keypadEvent eKey){
 //----------SETUP-&-LOOP-----------------------------------------------------------------------
 void setup() {
   Serial.begin(9600);
+  keypad.begin(makeKeymap(keys));
   keypad.setDebounceTime(50);
   keypad.addEventListener(keypadEvent()); //add an event listener for this keypad
   pinMode(redLED, OUTPUT);
