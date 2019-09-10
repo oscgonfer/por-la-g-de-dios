@@ -62,7 +62,7 @@ do {							 \
 #define OPEN LOW
 #define CLOSED HIGH
 
-typedef char KeypadEvent;
+typedef char keypadEvent;
 typedef unsigned int uint;
 typedef unsigned long ulong;
 

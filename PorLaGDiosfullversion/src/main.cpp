@@ -30,7 +30,7 @@ char keys[ROWS][COLS] = {
 byte rowPins[ROWS] = {52, 50, 48, 46};
 byte colPins[COLS] = {44, 42, 40};
 
-Keypad keypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 
 /*
@@ -127,7 +127,7 @@ void displayCodeEntryScreen()
 {
   password.reset();
   Serial.println("Enter Code:");
-  keypad.addEventListener(keypadEvent); //add an event listener for this keypad
+  keypad.addEventListener(keypadEvent()); //add an event listener for this keypad
   //setup and turn off both LEDs
   pinMode(redLED, OUTPUT);
   pinMode(greenLED, OUTPUT);
@@ -180,7 +180,7 @@ void checkPassword(){
 }
 
 //take care of some special events
-void keypadEvent(KeypadEvent eKey){
+void keypadEvent(keypadEvent eKey){
   switch (keypad.getState()){
   case PRESSED:
     // lcd.print(eKey);
@@ -209,12 +209,11 @@ void keypadEvent(KeypadEvent eKey){
 void setup() {
   Serial.begin(9600);
   keypad.setDebounceTime(50);
-  keypad.addEventListener(keypadEvent); //add an event listener for this keypad
+  keypad.addEventListener(keypadEvent()); //add an event listener for this keypad
   pinMode(redLED, OUTPUT);
   pinMode(greenLED, OUTPUT);
   digitalWrite(redLED, LOW);
   digitalWrite(greenLED, LOW);
-
   printUsage();
   read(); // should load previous config
 }
@@ -222,10 +221,4 @@ void setup() {
 void loop() {
   keypad.getKey();
   command = keypad.getKey();
-
-  // if(data_count == MAX_NUM_CHARS || command == '#') {
-  //   // Serial.println(cmd);
-  //   process_command();
-  //   clearData();
-  // }
 }

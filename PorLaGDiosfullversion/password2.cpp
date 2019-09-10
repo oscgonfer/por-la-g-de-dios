@@ -61,7 +61,8 @@ void loop(){
 void keypadEvent(KeypadEvent eKey){
   switch (keypad.getState()){
   case PRESSED:
-    lcd.print(eKey);
+    // lcd.print(eKey);
+    Serial.println(eKey);
     switch (eKey){
     case '#':
       checkPassword();
