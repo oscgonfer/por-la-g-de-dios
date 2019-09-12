@@ -162,10 +162,15 @@ void process_command(void) { //handler for input
     int lamp0  = atoi(lampfirst.c_str());
     int lamp1  = atoi(lampsecond.c_str());
       for (int lamp = lamp0 ; lamp < lamp1; lamp++){
-        if (mode == 1){
-          lamp = alternate;
-        } else {
-          mode = 0;
+        if (mode == 0){
+            // lamp = alternate;
+          } else if (mode == 1){
+
+          } else if (mode == 2){
+
+          } else {
+
+          }
         }
         Serial.print("lamp: ");
         Serial.println(lamp);
@@ -263,5 +268,9 @@ void loop() {
     cmd[data_count] = customKey;
     data_count++;
     }
+
+for (mode == "0"){
+
+}
 
 }
