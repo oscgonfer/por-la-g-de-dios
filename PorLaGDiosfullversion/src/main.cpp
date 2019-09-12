@@ -11,6 +11,9 @@ byte data_count = 0;
 char cmd[MAX_NUM_CHARS];
 boolean cmd_complete = false;
 
+// non blocking
+char alternate;
+
 //EEPROM
 int addr = 0;
 byte value;
@@ -84,7 +87,7 @@ void save(void) { //updates addr with values 0-255
     }
 }
 
-void testwrite(void) { //for testing of writing to EEPROM
+void testwrite(void) { //for testing of writing to EEPROM , Update is better for long life EEPROM
   for (int i = 0; i < 255; i++) {
     EEPROM.update(i, i);
   }
@@ -130,45 +133,58 @@ void process_command(void) { //handler for input
   readString2.replace("#","");
   String readString = readString2;
 
-  if (cmd[MAX_NUM_CHARS] < 4){
-    //Single
+  if (cmd[MAX_NUM_CHARS] < 6){
+    // Long
     String lamp = readString.substring(0, 2);
     String speed = readString.substring(2, 4);
-    // String mode = readString.substring(4, 6);
+    String mode = readString.substring(4, 6);
     Serial.println("lamp:" + lamp);
     Serial.println("speed:" + speed);
-    // Serial.println("mode:" + mode);
+    Serial.println("mode:" + mode);
     // Set pin no.## to ###
     // Set addr ## to ###
-  } else if (cmd[MAX_NUM_CHARS] < 6){
-    //Mutli
-    String lampbegin = readString.substring(0, 2);
-    String lampend = readString.substring(2, 4);
+  } else if (cmd[MAX_NUM_CHARS] = 4){
+      // Single
+      String lamp = readString.substring(0, 2);
+      String speed = readString.substring(2, 4);
+      String mode = "0";
+  } else if (cmd[MAX_NUM_CHARS] = 7){
+    //Alternate
+    String lampfirst = readString.substring(0, 2);
+    String lampsecond = readString.substring(2, 4);
     String speed = readString.substring(4, 6);
-    //String mode = readString.substring(6, 8);
-    Serial.println("lampbegin=" + lampbegin);
-    Serial.println("lampend=" + lampend);
+    String mode = readString.substring(6, 8);
+    Serial.println("lampfirst=" + lampfirst);
+    Serial.println("lampsecond=" + lampsecond);
     Serial.println("speed=" + speed);
-    // Serial.println("mode=" + mode);
-    int lamp0  = atoi(lampbegin.c_str());
-    int lamp1  = atoi(lampend.c_str());
+    Serial.println("mode=" + mode);
+    int lamp0  = atoi(lampfirst.c_str());
+    int lamp1  = atoi(lampsecond.c_str());
       for (int lamp = lamp0 ; lamp < lamp1; lamp++){
+        if (mode == 1){
+          lamp = alternate;
+        } else{
+          mode = 0;
+        }
         Serial.print("lamp: ");
         Serial.println(lamp);
         Serial.print("speed: ");
         Serial.println(speed);
+        Serial.println("mode:");
+        Serial.println(mode);
       }
+
   } else {
+    red(50);
     red(50);
     red(50);
     red(50);
   }
 }
 
-void alternating(void){
-  // check to see if it's time to change the state of the LED
+void mode0(void){
   unsigned long currentMillis = millis();
-//TODO MAKE VARIABLE/DYNAMIC
+//TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
   if ((ledState == HIGH) && (currentMillis - previousMillis >= OnTime)) {
     ledState = LOW;  // Turn it off
     previousMillis = currentMillis;  // Remember the time
@@ -179,6 +195,41 @@ void alternating(void){
     digitalWrite(ledPin, ledState);	  // Update the actual LED
   }
 }
+
+void mode1(void){
+  if (mode == "1") {
+    unsigned long currentMillis = millis();
+    //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
+    if(currentMillis - previousMillis > interval) {
+      previousMillis = currentMillis;
+
+      if (ledState == LOW)
+        ledState = HIGH;
+      else
+        ledState = LOW;
+
+      digitalWrite(ledPin, ledState);
+    }
+  }
+}
+
+void mode2(void){
+  if (mode == "2") {
+    unsigned long currentMillis = millis();
+    //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
+    if(currentMillis - previousMillis > interval) {
+      previousMillis = currentMillis;
+
+      if (ledState == LOW)
+        ledState = HIGH;
+      else
+        ledState = LOW;
+
+      digitalWrite(ledPin, ledState);
+    }
+  }
+}
+
 
 //----------SETUP-&-LOOP-----------------------------------------------------------------------
 void setup() {
@@ -211,5 +262,6 @@ void loop() {
 
 alternating();
 
+notalternating();
 
 }
