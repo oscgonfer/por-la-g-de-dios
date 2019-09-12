@@ -133,7 +133,7 @@ void process_command(void) { //handler for input
   readString2.replace("#","");
   String readString = readString2;
 
-  if (cmd[MAX_NUM_CHARS] < 6){
+  if (cmd[MAX_NUM_CHARS] = 6){
     // Long
     String lamp = readString.substring(0, 2);
     String speed = readString.substring(2, 4);
@@ -173,7 +173,6 @@ void process_command(void) { //handler for input
         Serial.println("mode:");
         Serial.println(mode);
       }
-
   } else {
     red(50);
     red(50);
