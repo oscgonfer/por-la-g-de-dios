@@ -1,6 +1,7 @@
 -I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/include
 -I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/src
 -I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/lib/Password
+-I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/.pio/libdeps/megaatmega2560/JLed_ID1711/src
 -I/home/j0r15/.platformio/packages/framework-arduinoavr/libraries/__cores__/arduino/EEPROM/src
 -I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/lib/Keypad
 -I/home/j0r15/Documents/Github/por-la-g-de-dios/PorLaGDiosfullversion/lib/Keypad/utility

@@ -3,6 +3,7 @@
 #include "Key.h"
 #include "Password.h"
 #include <EEPROM.h>
+#include <jled.h>
 
 //KEYPAD AND COMMAND
 #define MAX_NUM_CHARS 8
@@ -29,12 +30,13 @@ long OffTime = 750;          // milliseconds of off-time
 int ledState1 = LOW;             // ledState used to set the LED
 int ledState2 = LOW;             // ledState used to set the LED
 
+
 //TEST
 int testpin = 45;      // the number of the TEST LED
 
 //NON BLOCKING
-long previousMillis = 0;        // will store last time LED was updated
-long interval = 1000;           // interval at which to blink (milliseconds)
+// long previousMillis = 0;        // will store last time LED was updated
+// long interval = 1000;           // interval at which to blink (milliseconds)
 
 const byte ROWS = 4;
 const byte COLS = 3;
@@ -134,7 +136,7 @@ void process_command(void) { //handler for input
   readString2.replace("#","");
   String readString = readString2;
 
-  if (cmd[MAX_NUM_CHARS] = 5){
+  if (cmd[MAX_NUM_CHARS] == 5){
     // Long
     String lamp = readString.substring(0, 2);
     String speed = readString.substring(2, 4);
@@ -144,12 +146,12 @@ void process_command(void) { //handler for input
     Serial.println("mode:" + mode);
     // Set pin no.## to ###
     // Set addr ## to ###
-  } else if (cmd[MAX_NUM_CHARS] = 4){
+  } else if (cmd[MAX_NUM_CHARS] == 4){
       // Single
       String lamp = readString.substring(0, 2);
       String speed = readString.substring(2, 4);
       String mode = "0";
-  } else if (cmd[MAX_NUM_CHARS] = 7){
+  } else if (cmd[MAX_NUM_CHARS] == 7){
     //Alternate
     String lampfirst = readString.substring(0, 2);
     String lampsecond = readString.substring(2, 4);
@@ -159,27 +161,15 @@ void process_command(void) { //handler for input
     Serial.println("lampsecond=" + lampsecond);
     Serial.println("speed=" + speed);
     Serial.println("mode=" + mode);
-    int lamp0  = atoi(lampfirst.c_str());
-    int lamp1  = atoi(lampsecond.c_str());
-      for (int lamp = lamp0 ; lamp < lamp1; lamp++){
-        if (mode == 0){
-            // lamp = alternate;
-          } else if (mode == 1){
-
-          } else if (mode == 2){
-
-          } else {
-
-          }
-        }
-        Serial.print("lamp: ");
-        Serial.println(lamp);
+    // int lamp0  = atoi(lampfirst.c_str());
+    // int lamp1  = atoi(lampsecond.c_str());
+        Serial.print("lamps: ");
+        Serial.println(lampfirst + " " + lampsecond);
         Serial.print("speed: ");
         Serial.println(speed);
         Serial.println("mode:");
         Serial.println(mode);
-      }
-  } else {
+      } else {
     red(50);
     red(50);
     red(50);
@@ -187,56 +177,56 @@ void process_command(void) { //handler for input
   }
 }
 
-void mode0(int ledPin1, int ledPin2){ // Alternate
-  unsigned long currentMillis = millis();
-//TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
-  if ((ledState1 == HIGH) && (currentMillis - previousMillis >= OnTime)) {
-    ledState1 = LOW;  // Turn it off
-    ledState2 = HIGH;  // Turn it off
-    previousMillis = currentMillis;  // Remember the time
-    digitalWrite(ledPin1, ledState1);  // Update the actual LED
-    digitalWrite(ledPin2, ledState2);  // Update the actual LED
-  } else if ((ledState == LOW) && (currentMillis - previousMillis >= OffTime)) {
-    ledState1 = HIGH;  // turn it on
-    ledState2 = LOW;  // turn it on
-    previousMillis = currentMillis;   // Remember the time
-    digitalWrite(ledPin1, ledState1);	  // Update the actual LED
-    digitalWrite(ledPin2, ledState2);	  // Update the actual LED
-  }
+void mode0(int ledPin){ // Single
+  // if (mode == "2") {
+  //   unsigned long currentMillis = millis();
+  //   //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
+  //   if(currentMillis - previousMillis > interval) {
+  //     previousMillis = currentMillis;
+  //
+  //     if (ledState == LOW)
+  //       ledState = HIGH;
+  //     else
+  //       ledState = LOW;
+  //
+  //     digitalWrite(ledPin, ledState);
+  //   }
+  // }
 }
 
-void mode1(int ledPin){ //Alternate
-  if (mode == "1") {
-    unsigned long currentMillis = millis();
-    //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
-    if(currentMillis - previousMillis > interval) {
-      previousMillis = currentMillis;
-
-      if (ledState == LOW)
-        ledState = HIGH;
-      else
-        ledState = LOW;
-
-      digitalWrite(ledPin, ledState);
-    }
-  }
+void mode2(int ledPin){ // Long
+  // if (mode == "1") {
+  //   unsigned long currentMillis = millis();
+  //   //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
+  //   if(currentMillis - previousMillis > interval) {
+  //     previousMillis = currentMillis;
+  //
+  //     if (ledState == LOW)
+  //       ledState = HIGH;
+  //     else
+  //       ledState = LOW;
+  //
+  //     digitalWrite(ledPin, ledState);
+  //   }
+  // }
 }
 
-void mode2(int ledPin){ //Long
-  if (mode == "2") {
-    unsigned long currentMillis = millis();
-    //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
-    if(currentMillis - previousMillis > interval) {
-      previousMillis = currentMillis;
-
-      if (ledState == LOW)
-        ledState = HIGH;
-      else
-        ledState = LOW;
-
-      digitalWrite(ledPin, ledState);
-    }
-  }
+void mode1(int ledPin1, int ledPin2){ // Alternate
+  //   unsigned long currentMillis = millis();
+  // //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
+  //   if ((ledState1 == HIGH) && (currentMillis - previousMillis >= OnTime)) {
+  //     ledState1 = LOW;  // Turn it off
+  //     ledState2 = HIGH;  // Turn it off
+  //     previousMillis = currentMillis;  // Remember the time
+  //     digitalWrite(ledPin1, ledState1);  // Update the actual LED
+  //     digitalWrite(ledPin2, ledState2);  // Update the actual LED
+  //   } else if ((ledState == LOW) && (currentMillis - previousMillis >= OffTime)) {
+  //     ledState1 = HIGH;  // turn it on
+  //     ledState2 = LOW;  // turn it on
+  //     previousMillis = currentMillis;   // Remember the time
+  //     digitalWrite(ledPin1, ledState1);	  // Update the actual LED
+  //     digitalWrite(ledPin2, ledState2);	  // Update the actual LED
+  //   }
 }
 
 
@@ -269,8 +259,5 @@ void loop() {
     data_count++;
     }
 
-for (mode == "0"){
-
-}
 
 }
