@@ -130,8 +130,45 @@ void green(int wait) {
   digitalWrite(greenLED, LOW);
   delay(wait);
 }
-auto led1 = JLed(0).Off().Forever();
-auto led0 = JLed(0).Off().Forever();
+
+enum led_list {
+  pin_22
+  pin_23
+  pin_24
+  pin_2
+  pin_3
+  pin_4
+  pin_5
+  pin_6
+  pin_7
+  pin_8
+  pin_9
+  pin_10
+  pin_11
+  pin_12
+  pin_13
+  pin_count
+};
+
+Jled leds[pin_count] = {
+  JLed(0).Off().Forever();
+  JLed(1).Off().Forever();
+  JLed(2).Off().Forever();
+  JLed(3).Off().Forever();
+  JLed(4).Off().Forever();
+  JLed(5).Off().Forever();
+  JLed(6).Off().Forever();
+  JLed(7).Off().Forever();
+  JLed(8).Off().Forever();
+  JLed(9).Off().Forever();
+  JLed(10).Off().Forever();
+  JLed(11).Off().Forever();
+  JLed(12).Off().Forever();
+  JLed(13).Off().Forever();
+  JLed(14).Off().Forever();
+  JLed(15).Off().Forever();
+  JLed(16).Off().Forever();
+};
 
 
 void process_command(void) { //handler for input
@@ -160,9 +197,7 @@ void process_command(void) { //handler for input
       } else if (mode == NULL) {
           int lamp0  = atoi(lamp.c_str());
           int speed0  = atoi(speed.c_str());
-          JLed leds0[] = {
-              JLed(lamp0).Blink(600,speed0).Forever(),
-          };
+          JLed(lamp0).Blink(600,speed0).Forever(),
           JLedSequence sequence0(JLedSequence::eMode::PARALLEL, leds0);
 
       } else if (cmd[MAX_NUM_CHARS] == 7) {
@@ -276,8 +311,8 @@ void loop() {
     }
 
 
-    sequence0.Update();
+    leds.Update();
     // sequence1.Update();
-    led0.Update();
+    // led0.Update();
     // led1.Update();
 }
