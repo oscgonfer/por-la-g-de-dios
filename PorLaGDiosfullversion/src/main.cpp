@@ -29,10 +29,7 @@ long OnTime = 250;           // milliseconds of on-time
 long OffTime = 750;          // milliseconds of off-time
 int ledState1 = LOW;             // ledState used to set the LED
 int ledState2 = LOW;             // ledState used to set the LED
-int ledPins[] = {
-  11, 13, 4, 6, 5, 3
-};
-int pinCount = 6;
+
 
 //TEST
 int testpin = 45;      // the number of the TEST LED
@@ -164,9 +161,7 @@ void process_command(void) { //handler for input
           int lamp0  = atoi(lamp.c_str());
           int speed0  = atoi(speed.c_str());
           JLed leds0[] = {
-            for (int thisPin = 0; thisPin < pinCount; thisPin++) {
               JLed(lamp0).Blink(600,speed0).Forever(),
-            }
           };
           JLedSequence sequence0(JLedSequence::eMode::PARALLEL, leds0);
 
@@ -260,11 +255,6 @@ void setup() {
   digitalWrite(greenLED, LOW);
   printUsage();
   read(); // should load previous config from eeprom
-
-  for (int thisPin = 0; thisPin < pinCount; thisPin++) {
-   pinMode(ledPins, OUTPUT);
- }
-
 }
 
 void loop() {
