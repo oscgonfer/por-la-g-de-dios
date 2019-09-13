@@ -29,7 +29,10 @@ long OnTime = 250;           // milliseconds of on-time
 long OffTime = 750;          // milliseconds of off-time
 int ledState1 = LOW;             // ledState used to set the LED
 int ledState2 = LOW;             // ledState used to set the LED
-
+int ledPins[] = {
+  11, 13, 4, 6, 5, 3
+};
+int pinCount = 6;
 
 //TEST
 int testpin = 45;      // the number of the TEST LED
@@ -133,6 +136,7 @@ void green(int wait) {
 auto led1 = JLed(0).Off().Forever();
 auto led0 = JLed(0).Off().Forever();
 
+
 void process_command(void) { //handler for input
   String readString2 = cmd;
   readString2.replace("#","");
@@ -148,36 +152,25 @@ void process_command(void) { //handler for input
     Serial.println("mode:" + mode);
     // int mode1  = atoi(speed.c_str());
       if (mode == "1") {
-        int lamp1  = atoi(lamp.c_str());
-        int speed1  = atoi(speed.c_str());
-        speed1 = speed1 * 1000;
-        // JLed leds1[] = {
-        //   for (lamp1 < 17) {
-        //     JLed(lamp1).Blink(600, (speed1)).Forever(),
-        //   }
-        // };
-        // JLedSequence sequence1(JLedSequence::eMode::PARALLEL, leds1);
+      //   int lamp1  = atoi(lamp.c_str());
+      //   int speed1  = atoi(speed.c_str());
+      //   speed1 = speed1 * 1000;
+      //   JLed leds1[] = {
+      //       JLed(lamp1).Blink(600, (speed1)).Forever(),
+      //   };
+      //   JLedSequence sequence1(JLedSequence::eMode::PARALLEL, leds1);
+      // led1 = JLed(lamp1).Blink(speed1, 60).DelayAfter(speed1).Forever();
+      } else if (mode == NULL) {
+          int lamp0  = atoi(lamp.c_str());
+          int speed0  = atoi(speed.c_str());
+          JLed leds0[] = {
+            for (int thisPin = 0; thisPin < pinCount; thisPin++) {
+              JLed(lamp0).Blink(600,speed0).Forever(),
+            }
+          };
+          JLedSequence sequence0(JLedSequence::eMode::PARALLEL, leds0);
 
-      led1 = JLed(lamp1).Blink(speed1, 60).DelayAfter(speed1).Forever();
-    } else if (cmd[MAX_NUM_CHARS] == 5) {
-        // Single speed is in ms
-        String lamp = readString.substring(0, 2);
-        String speed = readString.substring(2, 4);
-        String mode = "0";
-        Serial.println("mode=" + mode);
-        if (mode == "0") {
-          int lamp1  = atoi(lamp.c_str());
-          int speed1  = atoi(speed.c_str());
-          // JLed leds1[] = {
-          //   for (lamp1 < 17) {
-          //     JLed(lamp1).Blink(600, (speed1)).Forever(),
-          //   }
-          // };
-          // JLedSequence sequence1(JLedSequence::eMode::PARALLEL, leds1);
-        
-        led0 = JLed(lamp1).Blink(speed1, 60).DelayAfter(speed1).Forever();
-      }
-    } else if (cmd[MAX_NUM_CHARS] == 7) {
+      } else if (cmd[MAX_NUM_CHARS] == 7) {
         //Alternate speed is in ms
         String lampfirst = readString.substring(0, 2);
         String lampsecond = readString.substring(2, 4);
@@ -193,7 +186,7 @@ void process_command(void) { //handler for input
             Serial.println(lampfirst + " " + lampsecond);
             Serial.print("speed: ");
             Serial.println(speed);
-            Serial.println("mode:");
+            Serial.println("mode: ");
             Serial.println(mode);
         } else {
           red(50);
@@ -203,6 +196,7 @@ void process_command(void) { //handler for input
       }
     }
 }
+
 
 // void mode0(int ledPin){ // Single
 //   // if (mode == "2") {
@@ -266,6 +260,11 @@ void setup() {
   digitalWrite(greenLED, LOW);
   printUsage();
   read(); // should load previous config from eeprom
+
+  for (int thisPin = 0; thisPin < pinCount; thisPin++) {
+   pinMode(ledPins, OUTPUT);
+ }
+
 }
 
 void loop() {
@@ -285,7 +284,10 @@ void loop() {
     cmd[data_count] = customKey;
     data_count++;
     }
+
+
+    sequence0.Update();
     // sequence1.Update();
-    led1.Update();
     led0.Update();
+    // led1.Update();
 }
