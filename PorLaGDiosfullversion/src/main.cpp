@@ -25,28 +25,28 @@ int redLED = 53;
 
 
 enum led_list {
-  pin_22,
-  pin_23,
-  pin_24,
-  pin_2,
-  pin_3,
-  pin_4,
-  pin_5,
-  pin_6,
-  pin_7,
-  pin_8,
-  pin_9,
-  pin_10,
-  pin_11,
-  pin_12,
-  pin_13,
-  pin_14,
-  pin_count
+  pin_22 = 22,
+  pin_23 = 23,
+  pin_24 = 24,
+  pin_2 = 2,
+  pin_3 = 3,
+  pin_4 = 4,
+  pin_5 = 5,
+  pin_6 = 6,
+  pin_7 = 7,
+  pin_8 = 8,
+  pin_9 = 9,
+  pin_10 = 10,
+  pin_11 = 11,
+  pin_12 = 12,
+  pin_13 = 13,
+  pin_14 = 14
 };
 
-JLed leds[pin_count] = {
-  JLed(0).Off().Forever(), //correct pins
-  JLed(1).Off().Forever(),
+JLed leds[16] = {
+  JLed(22).Off().Forever(),
+  JLed(23).Off().Forever(),
+  JLed(24).Off().Forever(),
   JLed(2).Off().Forever(),
   JLed(3).Off().Forever(),
   JLed(4).Off().Forever(),
@@ -59,8 +59,7 @@ JLed leds[pin_count] = {
   JLed(11).Off().Forever(),
   JLed(12).Off().Forever(),
   JLed(13).Off().Forever(),
-  JLed(14).Off().Forever(),
-  JLed(15).Off().Forever(),
+  JLed(14).Off().Forever()
 };
 
 const byte ROWS = 4;
@@ -173,21 +172,22 @@ void process_command(void) { //handler for input
     Serial.println("lamp:" + lamp);
     Serial.println("speed:" + speed);
     Serial.println("mode:" + mode);
-    // int mode1  = atoi(speed.c_str());
-      if (mode == "1") {
-      //   int lamp1  = atoi(lamp.c_str());
-      //   int speed1  = atoi(speed.c_str());
-      //   speed1 = speed1 * 1000;
-      //   JLed leds1[] = {
-      //       JLed(lamp1).Blink(600, (speed1)).Forever(),
-      //   };
-      //   JLedSequence sequence1(JLedSequence::eMode::PARALLEL, leds1);
+    int mode1  = atoi(mode.c_str());
+      if (mode1 == 1) {
+        int lamp1  = atoi(lamp.c_str());
+        int speed1  = atoi(speed.c_str());
+        speed1 = speed1 * 1000;
+      // Serial.println("mode 1 active");
+      JLed(leds[lamp1]).Blink(600,speed1).Forever();
       // led1 = JLed(lamp1).Blink(speed1, 60).DelayAfter(speed1).Forever();
-      } else if (mode == NULL) {
+    } else if (mode1 == 0 || mode == "") {
           int lamp0  = atoi(lamp.c_str());
           int speed0  = atoi(speed.c_str());
-          // JLed(leds[lamp0]).Blink(600,speed0).Forever();
-          leds[0].Blink(600,600).Forever();
+          // Serial.println("mode 0 active");
+          JLed(leds[lamp0]).Blink(600,speed0).Forever();
+          Serial.println(lamp0);
+          Serial.println(speed0);
+          // leds[lamp0].Blink(speed0,speed0).Forever();
       } else if (cmd[MAX_NUM_CHARS] == 7) {
         //Alternate speed is in ms
         String lampfirst = readString.substring(0, 2);
@@ -206,13 +206,14 @@ void process_command(void) { //handler for input
             Serial.println(speed);
             Serial.println("mode: ");
             Serial.println(mode);
-        } else {
-          red(50);
-          red(50);
-          red(50);
-          red(50);
-      }
     }
+  } else {
+    Serial.println("WRONG!");
+    red(50);
+    red(50);
+    red(50);
+    red(50);
+  }
 }
 
 
