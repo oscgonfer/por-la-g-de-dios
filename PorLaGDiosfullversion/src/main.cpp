@@ -79,7 +79,7 @@ byte colPins[COLS] = {44, 42, 40};
 
 Keypad customKeypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
-JLedSequence sequence(JLedSequence::eMode::SEQUENCE, leds);
+// JLedSequence sequence(JLedSequence::eMode::SEQUENCE, leds);
 
 /*
  * Prints a usage menu.
@@ -179,15 +179,14 @@ void process_command(void) { //handler for input
         speed1 = speed1 * 1000;
       // Serial.println("mode 1 active");
       JLed(leds[lamp1]).Blink(600,speed1).Forever();
-      // led1 = JLed(lamp1).Blink(speed1, 60).DelayAfter(speed1).Forever();
     } else if (mode1 == 0 || mode == "") {
           int lamp0  = atoi(lamp.c_str());
           int speed0  = atoi(speed.c_str());
           // Serial.println("mode 0 active");
-          JLed(leds[lamp0]).Blink(600,speed0).Forever();
+          // JLed(leds[lamp0]).Blink(600,speed0).Forever();
           Serial.println(lamp0);
           Serial.println(speed0);
-          // leds[lamp0].Blink(speed0,speed0).Forever();
+          leds[lamp0].Blink(speed0,speed0).Forever();
       } else if (cmd[MAX_NUM_CHARS] == 7) {
         //Alternate speed is in ms
         String lampfirst = readString.substring(0, 2);
@@ -247,6 +246,7 @@ void loop() {
     data_count++;
     }
 
-sequence.Update();
-
+// sequence.Update();
+ for (auto& led : leds) {led.Update();}
+ // JLed::UpdateAll();
 }
