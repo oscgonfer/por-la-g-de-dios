@@ -130,104 +130,131 @@ void green(int wait) {
   digitalWrite(greenLED, LOW);
   delay(wait);
 }
+auto led1 = JLed(0).Off().Forever();
+auto led0 = JLed(0).Off().Forever();
 
 void process_command(void) { //handler for input
   String readString2 = cmd;
   readString2.replace("#","");
   String readString = readString2;
 
-  if (cmd[MAX_NUM_CHARS] == 5){
-    // Long
+  if (cmd[MAX_NUM_CHARS] < 8){
+    // Long speed is in secs
     String lamp = readString.substring(0, 2);
     String speed = readString.substring(2, 4);
     String mode = readString.substring(4, 5);
     Serial.println("lamp:" + lamp);
     Serial.println("speed:" + speed);
     Serial.println("mode:" + mode);
-    // Set pin no.## to ###
-    // Set addr ## to ###
-  } else if (cmd[MAX_NUM_CHARS] == 4){
-      // Single
-      String lamp = readString.substring(0, 2);
-      String speed = readString.substring(2, 4);
-      String mode = "0";
-  } else if (cmd[MAX_NUM_CHARS] == 7){
-    //Alternate
-    String lampfirst = readString.substring(0, 2);
-    String lampsecond = readString.substring(2, 4);
-    String speed = readString.substring(4, 6);
-    String mode = readString.substring(6, 7);
-    Serial.println("lampfirst=" + lampfirst);
-    Serial.println("lampsecond=" + lampsecond);
-    Serial.println("speed=" + speed);
-    Serial.println("mode=" + mode);
-    // int lamp0  = atoi(lampfirst.c_str());
-    // int lamp1  = atoi(lampsecond.c_str());
-        Serial.print("lamps: ");
-        Serial.println(lampfirst + " " + lampsecond);
-        Serial.print("speed: ");
-        Serial.println(speed);
-        Serial.println("mode:");
-        Serial.println(mode);
-      } else {
-    red(50);
-    red(50);
-    red(50);
-    red(50);
-  }
+    // int mode1  = atoi(speed.c_str());
+      if (mode == "1") {
+        int lamp1  = atoi(lamp.c_str());
+        int speed1  = atoi(speed.c_str());
+        speed1 = speed1 * 1000;
+        // JLed leds1[] = {
+        //   for (lamp1 < 17) {
+        //     JLed(lamp1).Blink(600, (speed1)).Forever(),
+        //   }
+        // };
+        // JLedSequence sequence1(JLedSequence::eMode::PARALLEL, leds1);
+
+      led1 = JLed(lamp1).Blink(speed1, 60).DelayAfter(speed1).Forever();
+    } else if (cmd[MAX_NUM_CHARS] == 5) {
+        // Single speed is in ms
+        String lamp = readString.substring(0, 2);
+        String speed = readString.substring(2, 4);
+        String mode = "0";
+        Serial.println("mode=" + mode);
+        if (mode == "0") {
+          int lamp1  = atoi(lamp.c_str());
+          int speed1  = atoi(speed.c_str());
+          // JLed leds1[] = {
+          //   for (lamp1 < 17) {
+          //     JLed(lamp1).Blink(600, (speed1)).Forever(),
+          //   }
+          // };
+          // JLedSequence sequence1(JLedSequence::eMode::PARALLEL, leds1);
+        
+        led0 = JLed(lamp1).Blink(speed1, 60).DelayAfter(speed1).Forever();
+      }
+    } else if (cmd[MAX_NUM_CHARS] == 7) {
+        //Alternate speed is in ms
+        String lampfirst = readString.substring(0, 2);
+        String lampsecond = readString.substring(2, 4);
+        String speed = readString.substring(4, 6);
+        String mode = readString.substring(6, 7);
+        Serial.println("lampfirst=" + lampfirst);
+        Serial.println("lampsecond=" + lampsecond);
+        Serial.println("speed=" + speed);
+        Serial.println("mode=" + mode);
+        // int lampfirst2  = atoi(lampfirst.c_str());
+        // int lampsecond2  = atoi(lampsecond.c_str());
+            Serial.print("lamps: ");
+            Serial.println(lampfirst + " " + lampsecond);
+            Serial.print("speed: ");
+            Serial.println(speed);
+            Serial.println("mode:");
+            Serial.println(mode);
+        } else {
+          red(50);
+          red(50);
+          red(50);
+          red(50);
+      }
+    }
 }
 
-void mode0(int ledPin){ // Single
-  // if (mode == "2") {
-  //   unsigned long currentMillis = millis();
-  //   //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
-  //   if(currentMillis - previousMillis > interval) {
-  //     previousMillis = currentMillis;
-  //
-  //     if (ledState == LOW)
-  //       ledState = HIGH;
-  //     else
-  //       ledState = LOW;
-  //
-  //     digitalWrite(ledPin, ledState);
-  //   }
-  // }
-}
-
-void mode2(int ledPin){ // Long
-  // if (mode == "1") {
-  //   unsigned long currentMillis = millis();
-  //   //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
-  //   if(currentMillis - previousMillis > interval) {
-  //     previousMillis = currentMillis;
-  //
-  //     if (ledState == LOW)
-  //       ledState = HIGH;
-  //     else
-  //       ledState = LOW;
-  //
-  //     digitalWrite(ledPin, ledState);
-  //   }
-  // }
-}
-
-void mode1(int ledPin1, int ledPin2){ // Alternate
-  //   unsigned long currentMillis = millis();
-  // //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
-  //   if ((ledState1 == HIGH) && (currentMillis - previousMillis >= OnTime)) {
-  //     ledState1 = LOW;  // Turn it off
-  //     ledState2 = HIGH;  // Turn it off
-  //     previousMillis = currentMillis;  // Remember the time
-  //     digitalWrite(ledPin1, ledState1);  // Update the actual LED
-  //     digitalWrite(ledPin2, ledState2);  // Update the actual LED
-  //   } else if ((ledState == LOW) && (currentMillis - previousMillis >= OffTime)) {
-  //     ledState1 = HIGH;  // turn it on
-  //     ledState2 = LOW;  // turn it on
-  //     previousMillis = currentMillis;   // Remember the time
-  //     digitalWrite(ledPin1, ledState1);	  // Update the actual LED
-  //     digitalWrite(ledPin2, ledState2);	  // Update the actual LED
-  //   }
-}
+// void mode0(int ledPin){ // Single
+//   // if (mode == "2") {
+//   //   unsigned long currentMillis = millis();
+//   //   //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
+//   //   if(currentMillis - previousMillis > interval) {
+//   //     previousMillis = currentMillis;
+//   //
+//   //     if (ledState == LOW)
+//   //       ledState = HIGH;
+//   //     else
+//   //       ledState = LOW;
+//   //
+//   //     digitalWrite(ledPin, ledState);
+//   //   }
+//   // }
+// }
+//
+// void mode2(int ledPin){ // Long
+//   // if (mode == "1") {
+//   //   unsigned long currentMillis = millis();
+//   //   //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
+//   //   if(currentMillis - previousMillis > interval) {
+//   //     previousMillis = currentMillis;
+//   //
+//   //     if (ledState == LOW)
+//   //       ledState = HIGH;
+//   //     else
+//   //       ledState = LOW;
+//   //
+//   //     digitalWrite(ledPin, ledState);
+//   //   }
+//   // }
+// }
+//
+// void mode1(int ledPin1, int ledPin2){ // Alternate
+//   //   unsigned long currentMillis = millis();
+//   // //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
+//   //   if ((ledState1 == HIGH) && (currentMillis - previousMillis >= OnTime)) {
+//   //     ledState1 = LOW;  // Turn it off
+//   //     ledState2 = HIGH;  // Turn it off
+//   //     previousMillis = currentMillis;  // Remember the time
+//   //     digitalWrite(ledPin1, ledState1);  // Update the actual LED
+//   //     digitalWrite(ledPin2, ledState2);  // Update the actual LED
+//   //   } else if ((ledState == LOW) && (currentMillis - previousMillis >= OffTime)) {
+//   //     ledState1 = HIGH;  // turn it on
+//   //     ledState2 = LOW;  // turn it on
+//   //     previousMillis = currentMillis;   // Remember the time
+//   //     digitalWrite(ledPin1, ledState1);	  // Update the actual LED
+//   //     digitalWrite(ledPin2, ledState2);	  // Update the actual LED
+//   //   }
+// }
 
 
 //----------SETUP-&-LOOP-----------------------------------------------------------------------
@@ -258,6 +285,7 @@ void loop() {
     cmd[data_count] = customKey;
     data_count++;
     }
-
-
+    // sequence1.Update();
+    led1.Update();
+    led0.Update();
 }
