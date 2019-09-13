@@ -23,20 +23,45 @@ byte value;
 int greenLED = 51;
 int redLED = 53;
 
-//SSR
-unsigned long previousMillis = 0;        // will store last time LED was updated
-long OnTime = 250;           // milliseconds of on-time
-long OffTime = 750;          // milliseconds of off-time
-int ledState1 = LOW;             // ledState used to set the LED
-int ledState2 = LOW;             // ledState used to set the LED
 
+enum led_list {
+  pin_22,
+  pin_23,
+  pin_24,
+  pin_2,
+  pin_3,
+  pin_4,
+  pin_5,
+  pin_6,
+  pin_7,
+  pin_8,
+  pin_9,
+  pin_10,
+  pin_11,
+  pin_12,
+  pin_13,
+  pin_14,
+  pin_count
+};
 
-//TEST
-int testpin = 45;      // the number of the TEST LED
-
-//NON BLOCKING
-// long previousMillis = 0;        // will store last time LED was updated
-// long interval = 1000;           // interval at which to blink (milliseconds)
+JLed leds[pin_count] = {
+  JLed(0).Off().Forever(), //correct pins
+  JLed(1).Off().Forever(),
+  JLed(2).Off().Forever(),
+  JLed(3).Off().Forever(),
+  JLed(4).Off().Forever(),
+  JLed(5).Off().Forever(),
+  JLed(6).Off().Forever(),
+  JLed(7).Off().Forever(),
+  JLed(8).Off().Forever(),
+  JLed(9).Off().Forever(),
+  JLed(10).Off().Forever(),
+  JLed(11).Off().Forever(),
+  JLed(12).Off().Forever(),
+  JLed(13).Off().Forever(),
+  JLed(14).Off().Forever(),
+  JLed(15).Off().Forever(),
+};
 
 const byte ROWS = 4;
 const byte COLS = 3;
@@ -55,6 +80,7 @@ byte colPins[COLS] = {44, 42, 40};
 
 Keypad customKeypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
+JLedSequence sequence(JLedSequence::eMode::SEQUENCE, leds);
 
 /*
  * Prints a usage menu.
@@ -131,44 +157,7 @@ void green(int wait) {
   delay(wait);
 }
 
-enum led_list {
-  pin_22
-  pin_23
-  pin_24
-  pin_2
-  pin_3
-  pin_4
-  pin_5
-  pin_6
-  pin_7
-  pin_8
-  pin_9
-  pin_10
-  pin_11
-  pin_12
-  pin_13
-  pin_count
-};
 
-Jled leds[pin_count] = {
-  JLed(0).Off().Forever();
-  JLed(1).Off().Forever();
-  JLed(2).Off().Forever();
-  JLed(3).Off().Forever();
-  JLed(4).Off().Forever();
-  JLed(5).Off().Forever();
-  JLed(6).Off().Forever();
-  JLed(7).Off().Forever();
-  JLed(8).Off().Forever();
-  JLed(9).Off().Forever();
-  JLed(10).Off().Forever();
-  JLed(11).Off().Forever();
-  JLed(12).Off().Forever();
-  JLed(13).Off().Forever();
-  JLed(14).Off().Forever();
-  JLed(15).Off().Forever();
-  JLed(16).Off().Forever();
-};
 
 
 void process_command(void) { //handler for input
@@ -197,9 +186,8 @@ void process_command(void) { //handler for input
       } else if (mode == NULL) {
           int lamp0  = atoi(lamp.c_str());
           int speed0  = atoi(speed.c_str());
-          JLed(lamp0).Blink(600,speed0).Forever(),
-          JLedSequence sequence0(JLedSequence::eMode::PARALLEL, leds0);
-
+          // JLed(leds[lamp0]).Blink(600,speed0).Forever();
+          leds[0].Blink(600,600).Forever();
       } else if (cmd[MAX_NUM_CHARS] == 7) {
         //Alternate speed is in ms
         String lampfirst = readString.substring(0, 2);
@@ -228,58 +216,6 @@ void process_command(void) { //handler for input
 }
 
 
-// void mode0(int ledPin){ // Single
-//   // if (mode == "2") {
-//   //   unsigned long currentMillis = millis();
-//   //   //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
-//   //   if(currentMillis - previousMillis > interval) {
-//   //     previousMillis = currentMillis;
-//   //
-//   //     if (ledState == LOW)
-//   //       ledState = HIGH;
-//   //     else
-//   //       ledState = LOW;
-//   //
-//   //     digitalWrite(ledPin, ledState);
-//   //   }
-//   // }
-// }
-//
-// void mode2(int ledPin){ // Long
-//   // if (mode == "1") {
-//   //   unsigned long currentMillis = millis();
-//   //   //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
-//   //   if(currentMillis - previousMillis > interval) {
-//   //     previousMillis = currentMillis;
-//   //
-//   //     if (ledState == LOW)
-//   //       ledState = HIGH;
-//   //     else
-//   //       ledState = LOW;
-//   //
-//   //     digitalWrite(ledPin, ledState);
-//   //   }
-//   // }
-// }
-//
-// void mode1(int ledPin1, int ledPin2){ // Alternate
-//   //   unsigned long currentMillis = millis();
-//   // //TODO MAKE VARIABLE/DYNAMIC , all lamps with mode .. should run in here
-//   //   if ((ledState1 == HIGH) && (currentMillis - previousMillis >= OnTime)) {
-//   //     ledState1 = LOW;  // Turn it off
-//   //     ledState2 = HIGH;  // Turn it off
-//   //     previousMillis = currentMillis;  // Remember the time
-//   //     digitalWrite(ledPin1, ledState1);  // Update the actual LED
-//   //     digitalWrite(ledPin2, ledState2);  // Update the actual LED
-//   //   } else if ((ledState == LOW) && (currentMillis - previousMillis >= OffTime)) {
-//   //     ledState1 = HIGH;  // turn it on
-//   //     ledState2 = LOW;  // turn it on
-//   //     previousMillis = currentMillis;   // Remember the time
-//   //     digitalWrite(ledPin1, ledState1);	  // Update the actual LED
-//   //     digitalWrite(ledPin2, ledState2);	  // Update the actual LED
-//   //   }
-// }
-
 
 //----------SETUP-&-LOOP-----------------------------------------------------------------------
 void setup() {
@@ -289,7 +225,7 @@ void setup() {
   digitalWrite(redLED, LOW);
   digitalWrite(greenLED, LOW);
   printUsage();
-  read(); // should load previous config from eeprom
+  // read(); // should load previous config from eeprom
 }
 
 void loop() {
@@ -310,9 +246,6 @@ void loop() {
     data_count++;
     }
 
+sequence.Update();
 
-    leds.Update();
-    // sequence1.Update();
-    // led0.Update();
-    // led1.Update();
 }
