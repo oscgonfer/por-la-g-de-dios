@@ -1,11 +1,10 @@
 # to Do
-- led void
-- password check order
-  - password led
 - sync modes
   - create alternating pulses using non blocking loop
-- protocol
 - ssr
+
+- avoid lamp > 16
+
 
 - sudo chmod 666 /dev/ttyACM0
 - platformio run -t upload

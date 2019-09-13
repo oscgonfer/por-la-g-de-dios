@@ -25,42 +25,52 @@ int redLED = 53;
 
 
 enum led_list {
-  pin_22 = 22,
-  pin_23 = 23,
-  pin_24 = 24,
-  pin_2 = 2,
-  pin_3 = 3,
-  pin_4 = 4,
-  pin_5 = 5,
-  pin_6 = 6,
-  pin_7 = 7,
-  pin_8 = 8,
-  pin_9 = 9,
-  pin_10 = 10,
-  pin_11 = 11,
-  pin_12 = 12,
-  pin_13 = 13,
-  pin_14 = 14
+  pin_22,
+  pin_23,
+  pin_24,
+  pin_2,
+  pin_3,
+  pin_4,
+  pin_5,
+  pin_6,
+  pin_7,
+  pin_8,
+  pin_9,
+  pin_10,
+  pin_11,
+  pin_12,
+  pin_13,
+  pin_14
 };
 
-JLed leds[16] = {
-  JLed(22).Off().Forever(),
-  JLed(23).Off().Forever(),
-  JLed(24).Off().Forever(),
-  JLed(2).Off().Forever(),
-  JLed(3).Off().Forever(),
-  JLed(4).Off().Forever(),
-  JLed(5).Off().Forever(),
-  JLed(6).Off().Forever(),
-  JLed(7).Off().Forever(),
-  JLed(8).Off().Forever(),
-  JLed(9).Off().Forever(),
-  JLed(10).Off().Forever(),
-  JLed(11).Off().Forever(),
-  JLed(12).Off().Forever(),
-  JLed(13).Off().Forever(),
-  JLed(14).Off().Forever()
+JLed leds[25] = {
+   JLed(0).Off(),
+  JLed(0).Off(),
+  JLed(2).Off(),
+  JLed(3).Off(),
+  JLed(4).Off(),
+  JLed(5).Off(),
+  JLed(6).Off(),
+  JLed(7).Off(),
+  JLed(8).Off(),
+  JLed(9).Off(),
+  JLed(10).Off(),
+  JLed(11).Off(),
+  JLed(12).Off(),
+  JLed(13).Off(),
+  JLed(14).Off(),
+  JLed(0).Off(),
+  JLed(0).Off(),
+  JLed(0).Off(),
+  JLed(0).Off(),
+  JLed(0).Off(),
+  JLed(0).Off(),
+  JLed(0).Off(),
+  JLed(22).Off(),
+  JLed(23).Off(),
+  JLed(24).Off()
 };
+
 
 const byte ROWS = 4;
 const byte COLS = 3;
@@ -79,7 +89,7 @@ byte colPins[COLS] = {44, 42, 40};
 
 Keypad customKeypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
-// JLedSequence sequence(JLedSequence::eMode::SEQUENCE, leds);
+JLedSequence sequence(JLedSequence::eMode::PARALLEL, leds);
 
 /*
  * Prints a usage menu.
@@ -164,8 +174,8 @@ void process_command(void) { //handler for input
   readString2.replace("#","");
   String readString = readString2;
 
-  if (cmd[MAX_NUM_CHARS] < 8){
     // Long speed is in secs
+    if (cmd[MAX_NUM_CHARS] < 8){
     String lamp = readString.substring(0, 2);
     String speed = readString.substring(2, 4);
     String mode = readString.substring(4, 5);
@@ -182,11 +192,17 @@ void process_command(void) { //handler for input
     } else if (mode1 == 0 || mode == "") {
           int lamp0  = atoi(lamp.c_str());
           int speed0  = atoi(speed.c_str());
+
+          // switch (lamp0) {
+          //   case 22: lamp0 = pin_22; break;
+          //
+          // }
+
           // Serial.println("mode 0 active");
-          // JLed(leds[lamp0]).Blink(600,speed0).Forever();
+          // JLed(leds[lamp0]).Blink(speed0,speed0).Forever();
           Serial.println(lamp0);
           Serial.println(speed0);
-          leds[lamp0].Blink(speed0,speed0).Forever();
+          leds[lamp0].Blink(speed0, speed0).Forever();
       } else if (cmd[MAX_NUM_CHARS] == 7) {
         //Alternate speed is in ms
         String lampfirst = readString.substring(0, 2);
@@ -205,7 +221,8 @@ void process_command(void) { //handler for input
             Serial.println(speed);
             Serial.println("mode: ");
             Serial.println(mode);
-    }
+          }
+
   } else {
     Serial.println("WRONG!");
     red(50);
@@ -225,6 +242,7 @@ void setup() {
   digitalWrite(redLED, LOW);
   digitalWrite(greenLED, LOW);
   printUsage();
+  // leds[8] = JLed(8).Off();
   // read(); // should load previous config from eeprom
 }
 
@@ -246,7 +264,8 @@ void loop() {
     data_count++;
     }
 
-// sequence.Update();
- for (auto& led : leds) {led.Update();}
- // JLed::UpdateAll();
+sequence.Update();
+// delay(1);
+// leds.Update();
+ // for (auto& led : leds) {led.Update();}
 }
