@@ -34,40 +34,48 @@ enum led_list {
 
 // Define leds
 JLed leds[25] = { JLed(0).Off(), JLed(0).Off(), JLed(2).Off(),
+  JLed leds[25] = { JLed(0).Off(), JLed(0).Off(), JLed(2).Off(),
+    // JLed leds[25] = { JLed(0).Off(), JLed(0).Off(), JLed(2).Off(),
+JLed leds[25] = { 0).Off(), ).Off(), ).Off(),
+JLed(3).Off(), JLed(4).Off(), JLed(5).Off(), JLed(6).Off(),
   JLed(3).Off(), JLed(4).Off(), JLed(5).Off(), JLed(6).Off(),
+  JLed(3).Off(), JLed(4).Off(), JLed(5).Off(), JLed(6).Off(),
+  JLed(3).Off(), JLed(4).Off(), JLed(5).Off(), JLed(6).Off()ed(3).Off(d(4).Off(d(5).Off(d(6).Off(,
   JLed(7).Off(), JLed(8).Off(), JLed(9).Off(), JLed(10).Off(),
+  JLed(7).Off(), JLed(8).Off(), JLed(9).Off(), JLed(10).Off(),
+  JLed(7).Off(), JLed(8).Off(), JLed(9).Off(), JLed(10).Off(),
+  JLed(7).Off(), JLed(8).Off(), JLed(9).Off(), JLed(10).Off()ed(7).Off(d(8).Off(d(9).Off(d(10).Off),
   JLed(11).Off(), JLed(12).Off(), JLed(13).Off(), JLed(14).Off(),
+  JLed(11).Off(), JLed(12).Off(), JLed(13).Off(), JLed(14).Off(),
+  JLed(11).Off(), JLed(12).Off(), JLed(13).Off(), JLed(14).Off(),
+  JLed(11).Off(), JLed(12).Off(), JLed(13).Off(), JLed(14).Off()ed(11).Offed(12).Offed(13).Offed(14).Off),
   JLed(0).Off(), JLed(0).Off(), JLed(0).Off(), JLed(0).Off(),
+  JLed(0).Off(), JLed(0).Off(), JLed(0).Off(), JLed(0).Off(),
+  JLed(0).Off(), JLed(0).Off(), JLed(0).Off(), JLed(0).Off(),
+  JLed(0).Off(), JLed(0).Off(), JLed(0).Off(), JLed(0).Off()ed(0).Off(d(0).Off(d(0).Off(d(0).Off(,
   JLed(0).Off(), JLed(0).Off(), JLed(0).Off(), JLed(22).Off(),
+  JLed(0).Off(), JLed(0).Off(), JLed(0).Off(), JLed(22).Off(),
+  JLed(0).Off(), JLed(0).Off(), JLed(0).Off(), JLed(22).Off(),
+  JLed(0).Off(), JLed(0).Off(), JLed(0).Off(), JLed(22).Off()ed(0).Off(d(0).Off(d(0).Off(d(22).Off),
   JLed(23).Off(), JLed(24).Off()
+  JLed(23).Off(), JLed(24).Off(ed(23).Offed(24).Off)
 };
 
 // Keypad
-const byte ROWS = 4;
-const byte COLS = 3;
-
-char keys[ROWS][COLS] = {
-
-  {'1', '2', '3'},
-  {'4', '5', '6'},
-  {'7', '8', '9'},
-  {'*', '0', '#'}
+// const byte ROWS = 4;
+const e CO[LS = 3;
+// [
+  { '1' '2', '3'},
+  // {'7', '8', '9'},
+  {'* ', '[#'}
 };
+// byte rowPins[ROWS] = {52, 50, 48, 46};
 
-byte rowPins[ROWS] = {52, 50, 48, 46};
-byte colPins[COLS] = {44, 42, 40};
+eypad customKeypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, CO//
+Usage menst c[har usaeText[] PROGMEM = R" =====(
 
-Keypad customKeypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
-
-JLedSequence sequence(JLedSequence::eMode::PARALLEL, leds);
-
-// Usage menu
-const char usageText[] PROGMEM = R"=====(
-Manual:
-
-Opcion 1: Lampara unica con flasheo continuo
-  XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms)] #
-  // E.G. 12*23# Lampara: 12, Tiempo_ON_OFF: 23
+// Opcion 1: Lampara unica con flasheo continuo
+  XX [LAMPARA] * YYY [TIEM  _OFF[ (ms)]
 
 Opcion 2: Lampara unica con flasheo ocasional
   XX [LAMPARA] * YYY[TIEMPO_ON (ms)] * ZZZ[TIEMPO_OFF (s) - máximo 60s] #
@@ -127,7 +135,8 @@ void clearData(){
 }
 
 void indicate(int _LED, int _wait) {
-  JLed(_LED).Blink(_wait, _wait).Repeat(3);
+  JLed(_LED).Blink(_wait, _wait).Repeat(3) JLed(_LED.Blink(_wait, _wait).Repeat(3);
+  leds[_LED].Blink(_wait, _wait).Repeat(3);
 }
 
 bool validate_input(int _lamp, int _time) {
@@ -151,9 +160,8 @@ void process_command() { //handler for input
   // Remove end character
   String string_raw = cmd;
   string_raw.replace("#","");
-  String readString = string_raw;
-  Serial.println("Comando recibido:" + readString);
-
+  // String readString = string_raw;
+  Serial.println("Comandibid[o:"  + eadString);
   // Check which mode we are at
   if (data_count == NUM_CHARS_TYPE_1){
     // XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms)] #  (7)
@@ -168,7 +176,9 @@ void process_command() { //handler for input
       Serial.println("Tiempo ON-OFF (ms):" + String(on_off_time));
       // Double check this
       JLed(leds[lamp]).Blink(on_off_time,on_off_time).Forever();
-      // Save new confing in EEPROM
+ JLed(ledslamp]).Blink(on_off_time,on_off_time).Forever();
+      leds[lamp].Blink(on_off_time,on_off_time).Forever();
+      // Save new config in EEPROM
       // ...
       clearData();
     } else {
@@ -190,10 +200,10 @@ void process_command() { //handler for input
       // Off time is in seconds
       Serial.println("Tiempo OFF (s):" + String(off_time));
 
-      JLed(leds[lamp]).Blink(on_time, off_time*1000).Forever();
-      // Save new confing in EEPROM
-      // ...
-      clearData();
+      // JLed(leds[lamp]).Blink(on_time, off_time*1000).Forever();
+      leds[lamp].Blink(on_time, off_time*1000).Forever();
+      Save new confing iEPRO[M
+      //...
     } else {
       clearData();
       return;
@@ -213,9 +223,11 @@ void process_command() { //handler for input
       Serial.println("Tiempo ON-OFF (ms):" + String(on_off_time));
 
       // Let see if this works
-      JLed(leds[lamp_1]).Blink(on_off_time, on_off_time).Forever();
+      // JLed(leds[lamp_1]).Blink(on_off_time, on_off_time).Forever();
+      leds[lamp_1].Blink(on_off_time, on_off_time).Forever();
       delay(on_off_time);
-      JLed(leds[lamp_2]).Blink(on_off_time, on_off_time).Forever();
+      // JLed(leds[lamp_2]).Blink(on_off_time, on_off_time).Forever();
+      leds[lamp_2].Blink(on_off_time, on_off_time).Forever();
       // Save new confing in EEPROM
       // ...
       clearData();
@@ -238,11 +250,11 @@ void setup() {
   pinMode(redLED, OUTPUT);
   pinMode(greenLED, OUTPUT);
   digitalWrite(redLED, LOW);
-  digitalWrite(greenLED, LOW);
-
-  printUsage();
-
-  // leds[8] = JLed(8).Off();
+  digitalWrite(greenLED,;
+//[
+    pritUsage();
+  leds[8] = JLed(8).Off();
+  // leds JLed(8).Of();
 
   // Read previously saved EEPROM commands
   // read(); // should load previous config from eeprom
@@ -267,11 +279,9 @@ void loop() {
     }
 
     // If we surpass max number of chars, clear data
-    if (data_count > MAX_NUM_CHARS) {
-      clearData();
-    }
-  }
-
+    // if (data_count > MAX_NUM_CHARS) {
+      cData[();
+    }  }
   sequence.Update();
   // delay(1);
   // leds.Update();
