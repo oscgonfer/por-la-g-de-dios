@@ -11,6 +11,7 @@
 #define NUM_CHARS_TYPE_3 8
 #define MAX_TIME_JLED 60000
 #define MAX_NUM_LAMP 16
+#define ADDR_INIT_EEPROM 100
 
 char keyPressed;
 byte data_count = 0;
@@ -109,17 +110,25 @@ void save_lamp(int _eeprom_init_addr, uint16_t _on_time, uint16_t _off_time, byt
     EEPROM.update(_eeprom_init_addr + 2, _off_time_part_1);
     EEPROM.update(_eeprom_init_addr + 3, _off_time_part_2);
     EEPROM.update(_eeprom_init_addr + 4, _synced_lamp);
+
+    // Update ADDR_INIT_EEPROM if necessary
+    EEPROM.update(ADDR_INIT_EEPROM, 0xff);
 }
 
 void init_lamps_eeprom() {
 
+  //We check if the ADDR_INIT_EEPROM is a known value, otherwise, return
+  if (EEPROM.read(ADDR_INIT_EEPROM) != 0xff){
+    return;
+  } 
+
   // Iterate each saved lamp
   for (int i = 0; i <(MAX_NUM_LAMP-1)*5; i+=5) {
-    byte _on_time_part_1 = EEPROM.read(i);
-    byte _on_time_part_2 = EEPROM.read(i + 1);
-    byte _off_time_part_1 = EEPROM.read(i + 2);
-    byte _off_time_part_2 = EEPROM.read(i + 3);   
-    byte _synced_lamp = EEPROM.read(i + 4);
+    value _on_time_part_1 = EEPROM.read(i);
+    value _on_time_part_2 = EEPROM.read(i + 1);
+    value _off_time_part_1 = EEPROM.read(i + 2);
+    value _off_time_part_2 = EEPROM.read(i + 3);   
+    value _synced_lamp = EEPROM.read(i + 4);
 
     // Parse _on_time
     uint16_t _on_time = _on_time_part_1 << 8;
@@ -131,13 +140,17 @@ void init_lamps_eeprom() {
 
     // Update LEDs (off time is in ms already)
     int lamp = i/5 + 1;
+    Serial.println("Initialising EEPROM value for lamp" + String(lamp));
+
     leds[lamp].Blink(_on_time, _off_time).Forever();
     if (_synced_lamp != 0xff) {
       delay(_on_time); // should be the same as _off_time
       int lamp_2 = int(_synced_lamp);
+      Serial.println("Initialising EEPROM value for synced lamp" + String(lamp_2));
       leds[lamp_2].Blink(_on_time, _off_time).Forever();
     }
   }
+  Serial.println("Init Lamps done");
 }
 
 void clearData(){
@@ -154,7 +167,7 @@ bool validate_input(int _lamp, int _time) {
   bool valid_input;
 
   if (_lamp <= MAX_NUM_LAMP && _time <= MAX_TIME_JLED) {
-    Serial.println("Input valida");
+    Serial.println("Entrada valida");
     valid_input = true;
   } else if (_lamp > MAX_NUM_LAMP) {
     Serial.println("Numero de lampara no valido");
@@ -193,7 +206,7 @@ void process_command() { //handler for input
       clearData();
       indicate(greenLED, indicatorTime);
     } else {
-      Serial.println("Invalid input");
+      Serial.println("Entrada no valida");
       indicate(redLED, indicatorTime);
       clearData();
       return;
@@ -221,7 +234,7 @@ void process_command() { //handler for input
       clearData();
       indicate(greenLED, indicatorTime);
     } else {
-      Serial.println("Invalid input");
+      Serial.println("Entrada no valida");
       indicate(redLED, indicatorTime);
       clearData();
       return;
@@ -250,14 +263,14 @@ void process_command() { //handler for input
       clearData();
       indicate(greenLED, indicatorTime);
     } else {
-      Serial.println("Invalid input");
+      Serial.println("Entrada no valida");
       indicate(redLED, indicatorTime);
       clearData();
       return;
     }
 
   } else {
-    Serial.println("Unkown mode!");
+    Serial.println("Modo desconocido!");
     indicate(redLED, indicatorTime);
     clearData();
     return;
@@ -277,6 +290,7 @@ void setup() {
 
   // Read previously saved EEPROM commands
   init_lamps_eeprom();
+
 }
 
 void loop() {
@@ -299,7 +313,7 @@ void loop() {
 
     // If we surpass max number of chars, clear data
     if (data_count > MAX_NUM_CHARS) {
-      Serial.println("Command too long without end character");
+      Serial.println("Comando demasiado largo sin caracter #");
       indicate(redLED, indicatorTime);
       clearData();
     }
