@@ -42,7 +42,7 @@ void changePinState(int pin)
 # Storing Concept
 Mode 0: normal
 Mode 1: flash long sometimes
-Mode 3: alternating
+Mode 2: alternating
 
 
 in EEPROM:

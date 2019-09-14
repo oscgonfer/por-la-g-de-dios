@@ -138,10 +138,10 @@ void read(void) { //reads/loads everything from EEPROM
   if (fHasLooped == false) {
     for (int x = 0; x < 125; x++) {
       value = EEPROM.read(addr);
-      Serial.print(addr);
-      Serial.print("\t");
-      Serial.print(value, DEC);
-      Serial.println();
+      // Serial.print(addr);
+      // Serial.print("\t");
+      // Serial.print(value, DEC);
+      // Serial.println();
 
       // addr = addr + 1;
       for (int i = addr; i < 125; i++) {
@@ -149,25 +149,46 @@ void read(void) { //reads/loads everything from EEPROM
 
         if (i < 100) {
           leds[i].Blink(speed, speed).Forever();
+          Serial.print("lamp ");
+          Serial.print(i);
+          Serial.print("Speed");
+          Serial.print(speed);
+          Serial.println();
+
         }
 
           if (i > 100) {
-            i = i - 100;
+            i = i - 100; // 3rd colomn for eeprom
             int mode = value;
             if (mode == 0) {
-              leds[i].Blink(value, value).Forever();
+              leds[i].Blink(speed, speed).Forever();
+              Serial.print(mode);
+              Serial.print(i);
+              Serial.print(speed);
+              Serial.println();
 
             } else if (mode == 1) {
-              int valueee =  value * 1000;
-              leds[i].Blink(60, valueee).Forever();
+              int speedeee =  speed * 1000;
+              leds[i].Blink(60, speedeee).Forever();
+              Serial.print(mode);
+              Serial.print(i);
+              Serial.print(speed);
+              Serial.println();
 
             } else if (value == 2 || value == 3) {
 
               if (mode == 2) {
                 leds[i].Blink(speed, speed).Forever().DelayBefore(speed);
-
+                Serial.print(mode);
+                Serial.print(i);
+                Serial.print(speed);
+                Serial.println();
             } else {
               leds[i].Blink(speed, speed).Forever();
+              Serial.print(mode);
+              Serial.print(i);
+              Serial.print(speed);
+              Serial.println();
             }
           }
         }
