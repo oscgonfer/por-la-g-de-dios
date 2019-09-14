@@ -117,13 +117,13 @@ void printUsage() {
   Serial.println((const __FlashStringHelper *)usageText);
 }
 
-void save(void) { //updates addr with values 0-255
-    EEPROM.update(addr, value);
-    addr = addr + 1;
-    if (addr == 200) {
-      addr = 0;
-    }
-}
+// void save(void) { //updates addr with values 0-255
+//     EEPROM.update(addr, value);
+//     addr = addr + 1;
+//     if (addr == 125) {
+//       addr = 0;
+//     }
+// }
 
 void testwrite(void) { //for testing of writing to EEPROM , Update is better for long life EEPROM
   for (int i = 0; i < 255; i++) {
@@ -139,9 +139,22 @@ void read(void) { //reads everything from EEPROM
   Serial.print(value, DEC);
   Serial.println();
 
-  addr = addr + 1;
-  if (addr == EEPROM.length()) {
-    addr = 0;
+  // addr = addr + 1;
+  for (int i = addr; i < 125; i++) {
+    if (addr < 100) {
+      leds[addr].Blink(value, value).Forever();
+    }
+    if (addr > 100) {
+      addr = addr - 100;
+      if (value == 0) {
+        leds[addr].Blink(value, value).Forever();
+      } else if (value == 1) {
+        int valueee =  value * 1000;
+        leds[addr].Blink(60, valueee).Forever();
+      } else if (value == 2) {
+        
+      }
+    }
   }
 }
 
@@ -167,8 +180,6 @@ void green(int wait) {
 }
 
 
-
-
 void process_command(void) { //handler for input
   String readString2 = cmd;
   readString2.replace("#","");
@@ -187,22 +198,16 @@ void process_command(void) { //handler for input
         int lamp1  = atoi(lamp.c_str());
         int speed1  = atoi(speed.c_str());
         speed1 = speed1 * 1000;
-      // Serial.println("mode 1 active");
-      JLed(leds[lamp1]).Blink(600,speed1).Forever();
-    } else if (mode1 == 0 || mode == "") {
+        leds[lamp1].Blink(60, speed1).Forever();
+        int speedee == speed1 / 1000;
+        EEPROM.update(lamp1, speedee);
+        EEPROM.update(lamp1 + 100, mode1);
+    } else if (mode == "") {
           int lamp0  = atoi(lamp.c_str());
           int speed0  = atoi(speed.c_str());
-
-          // switch (lamp0) {
-          //   case 22: lamp0 = pin_22; break;
-          //
-          // }
-
-          // Serial.println("mode 0 active");
-          // JLed(leds[lamp0]).Blink(speed0,speed0).Forever();
-          Serial.println(lamp0);
-          Serial.println(speed0);
           leds[lamp0].Blink(speed0, speed0).Forever();
+          EEPROM.update(lamp0, speed0);
+          EEPROM.update(lamp0 + 100, 0);
       } else if (cmd[MAX_NUM_CHARS] == 7) {
         //Alternate speed is in ms
         String lampfirst = readString.substring(0, 2);
@@ -213,14 +218,23 @@ void process_command(void) { //handler for input
         Serial.println("lampsecond=" + lampsecond);
         Serial.println("speed=" + speed);
         Serial.println("mode=" + mode);
-        // int lampfirst2  = atoi(lampfirst.c_str());
-        // int lampsecond2  = atoi(lampsecond.c_str());
+        int lampfirst2  = atoi(lampfirst.c_str());
+        int lampsecond2  = atoi(lampsecond.c_str());
+        int speed2  = atoi(speed.c_str());
+        int mode2  = atoi(mode.c_str());
             Serial.print("lamps: ");
             Serial.println(lampfirst + " " + lampsecond);
             Serial.print("speed: ");
             Serial.println(speed);
             Serial.println("mode: ");
             Serial.println(mode);
+            if (mode == 2){
+            leds[lampfirst2].Blink(speed2, speed2).Forever().DelayBefore(speed2);
+            leds[lampsecond2].Blink(speed2, speed2).Forever();
+            EEPROM.update(lampfirst2, speed2); //store lamp + speed
+            EEPROM.update(lampsecond2, speed2);
+            EEPROM.update(lampsecond2 + 100, mode2);
+            }
           }
 
   } else {
@@ -265,7 +279,4 @@ void loop() {
     }
 
 sequence.Update();
-// delay(1);
-// leds.Update();
- // for (auto& led : leds) {led.Update();}
 }

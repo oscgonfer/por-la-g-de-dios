@@ -40,15 +40,13 @@ void changePinState(int pin)
 }  
 
 # Storing Concept
-Mode 1: normal
-Mode 2: flash alternatively
-Mode 3: sync with all modes 3 lamps
+Mode 0: normal
+Mode 1: flash long sometimes
+Mode 3: alternating
 
 
 in EEPROM:
 lamp(addr)  speed(value)
-00          10
-01          10
 02          10
 03          10
 04          10
@@ -60,15 +58,26 @@ lamp(addr)  speed(value)
 10          10
 11          10
 12          10
+13          10
+22          10
+23          10
+24          10
+24          10
 
 lamp(addr)  mode(value)
-101         2
-102         2
-103         2
-104
-105
-106
-107
-108
-109
-110
+102          1
+103          1
+104          1
+105          1
+106          1
+107          1
+108          0
+109          0
+110          0
+111          0
+112          2
+113          2
+122          1
+123          1
+124          1
+124          1
