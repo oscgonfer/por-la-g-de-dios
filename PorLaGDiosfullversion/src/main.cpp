@@ -175,8 +175,7 @@ void process_command() { //handler for input
       Serial.println("Lampara:" + String(lamp));
       Serial.println("Tiempo ON-OFF (ms):" + String(on_off_time));
       // Double check this
-      JLed(leds[lamp]).Blink(on_off_time,on_off_time).Forever();
- JLed(ledslamp]).Blink(on_off_time,on_off_time).Forever();
+      // JLed(leds[lamp]).Blink(on_off_time,on_off_time).Forever();
       leds[lamp].Blink(on_off_time,on_off_time).Forever();
       // Save new config in EEPROM
       // ...
