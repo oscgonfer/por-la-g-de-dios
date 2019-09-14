@@ -18,7 +18,7 @@ char alternate;
 //EEPROM
 int addr = 0;
 byte value;
-bool fHasLooped  = true;
+bool fHasLooped  = false;
 
 //INDICATORS
 int greenLED = 51;
@@ -116,14 +116,14 @@ void printUsage() {
 //     }
 // }
 
-// void testwrite(void) { //for testing of writing to EEPROM , Update is better for long life EEPROM
-//   for (int i = 0; i < 255; i++) {
-//     EEPROM.update(i, i);
-//   }
-// }
+void testwrite(void) { //for testing of writing to EEPROM , Update is better for long life EEPROM
+  for (int i = 0; i < 255; i++) {
+    EEPROM.update(i, i);
+  }
+}
 
 
-void read(void) { //reads/loads everything from EEPROM
+void load(void) { //reads/loads everything from EEPROM
       value = EEPROM.read(addr);
       // Serial.print(addr);
       // Serial.print("\t");
@@ -136,7 +136,7 @@ void read(void) { //reads/loads everything from EEPROM
 
         if (i < 100) {
           leds[i].Blink(speed, speed).Forever();
-          Serial.print("lamp ");
+          Serial.print("addr ");
           Serial.print(i);
           Serial.print("Speed ");
           Serial.print(speed);
@@ -144,10 +144,11 @@ void read(void) { //reads/loads everything from EEPROM
         }
 
           if (i > 100) {
-            i = i - 100; // 3rd colomn for eeprom
+            int ll = i;
+            ll = ll - 100; // 3rd colomn for eeprom
             int mode = value;
             if (mode == 0) {
-              leds[i].Blink(speed, speed).Forever();
+              leds[ll].Blink(speed, speed).Forever();
               Serial.print("mode ");
               Serial.print(mode);
               Serial.print("lamp ");
@@ -158,7 +159,7 @@ void read(void) { //reads/loads everything from EEPROM
 
             } else if (mode == 1) {
               int speedeee =  speed * 1000;
-              leds[i].Blink(60, speedeee).Forever();
+              leds[ll].Blink(60, speedeee).Forever();
               Serial.print(mode);
               Serial.print(i);
               Serial.print(speed);
@@ -167,13 +168,13 @@ void read(void) { //reads/loads everything from EEPROM
             } else if (value == 2 | value == 3) {
 
               if (mode == 2) {
-                leds[i].Blink(speed, speed).Forever().DelayBefore(speed);
+                leds[ll].Blink(speed, speed).Forever().DelayBefore(speed);
                 Serial.print(mode);
                 Serial.print(i);
                 Serial.print(speed);
                 Serial.println();
             } else {
-              leds[i].Blink(speed, speed).Forever();
+              leds[ll].Blink(speed, speed).Forever();
               Serial.print(mode);
               Serial.print(i);
               Serial.print(speed);
@@ -183,6 +184,31 @@ void read(void) { //reads/loads everything from EEPROM
         }
       }
 }
+
+void read() {
+  // read a byte from the current address of the EEPROM
+  value = EEPROM.read(address);
+
+  Serial.print(address);
+  Serial.print("\t");
+  Serial.print(value, DEC);
+  Serial.println();
+
+  /***
+    Advance to the next address, when at the end restart at the beginning.
+
+    Larger AVR processors have larger EEPROM sizes, E.g:
+    - Arduno Duemilanove: 512b EEPROM storage.
+    - Arduino Uno:        1kb EEPROM storage.
+    - Arduino Mega:       4kb EEPROM storage.
+
+    Rather than hard-coding the length, you should use the pre-provided length function.
+    This will make your code portable to all AVR processors.
+  ***/
+  address = address + 1;
+  if (address == EEPROM.length()) {
+    address = 0;
+  }
 
 void clearData(){
   while(data_count !=0){
@@ -204,6 +230,8 @@ void green(int wait) {
   digitalWrite(greenLED, LOW);
   delay(wait);
 }
+
+
 
 
 void process_command(void) { //handler for input
@@ -290,7 +318,7 @@ void setup() {
 void loop() {
   if (fHasLooped == false) {
     for (int x = 0; x != 125; x++) {
-      read(); // should load previous config from eeprom
+      load(); // should load previous config from eeprom
     delay(500);
     }
     fHasLooped = true;
