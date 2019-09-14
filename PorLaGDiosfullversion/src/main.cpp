@@ -18,6 +18,7 @@ char alternate;
 //EEPROM
 int addr = 0;
 byte value;
+bool fHasLooped  = false;
 
 //INDICATORS
 int greenLED = 51;
@@ -132,29 +133,47 @@ void testwrite(void) { //for testing of writing to EEPROM , Update is better for
 }
 
 
-void read(void) { //reads everything from EEPROM
-  value = EEPROM.read(addr);
-  Serial.print(addr);
-  Serial.print("\t");
-  Serial.print(value, DEC);
-  Serial.println();
+void read(void) { //reads/loads everything from EEPROM
 
-  // addr = addr + 1;
-  for (int i = addr; i < 125; i++) {
-    if (addr < 100) {
-      leds[addr].Blink(value, value).Forever();
-    }
-    if (addr > 100) {
-      addr = addr - 100;
-      if (value == 0) {
-        leds[addr].Blink(value, value).Forever();
-      } else if (value == 1) {
-        int valueee =  value * 1000;
-        leds[addr].Blink(60, valueee).Forever();
-      } else if (value == 2) {
-        
+  if (fHasLooped == false) {
+    for (int x = 0; x < 125; x++) {
+      value = EEPROM.read(addr);
+      Serial.print(addr);
+      Serial.print("\t");
+      Serial.print(value, DEC);
+      Serial.println();
+
+      // addr = addr + 1;
+      for (int i = addr; i < 125; i++) {
+        int speed = value;
+
+        if (i < 100) {
+          leds[i].Blink(speed, speed).Forever();
+        }
+
+          if (i > 100) {
+            i = i - 100;
+            int mode = value;
+            if (mode == 0) {
+              leds[i].Blink(value, value).Forever();
+
+            } else if (mode == 1) {
+              int valueee =  value * 1000;
+              leds[i].Blink(60, valueee).Forever();
+
+            } else if (value == 2 || value == 3) {
+
+              if (mode == 2) {
+                leds[i].Blink(speed, speed).Forever().DelayBefore(speed);
+
+            } else {
+              leds[i].Blink(speed, speed).Forever();
+            }
+          }
+        }
       }
     }
+   fHasLooped = true;
   }
 }
 
@@ -199,7 +218,7 @@ void process_command(void) { //handler for input
         int speed1  = atoi(speed.c_str());
         speed1 = speed1 * 1000;
         leds[lamp1].Blink(60, speed1).Forever();
-        int speedee == speed1 / 1000;
+        int speedee = speed1 / 1000;
         EEPROM.update(lamp1, speedee);
         EEPROM.update(lamp1 + 100, mode1);
     } else if (mode == "") {
@@ -208,6 +227,8 @@ void process_command(void) { //handler for input
           leds[lamp0].Blink(speed0, speed0).Forever();
           EEPROM.update(lamp0, speed0);
           EEPROM.update(lamp0 + 100, 0);
+          // int testread = EEPROM.read(lamp0);
+          // Serial.println(testread);
       } else if (cmd[MAX_NUM_CHARS] == 7) {
         //Alternate speed is in ms
         String lampfirst = readString.substring(0, 2);
@@ -221,19 +242,20 @@ void process_command(void) { //handler for input
         int lampfirst2  = atoi(lampfirst.c_str());
         int lampsecond2  = atoi(lampsecond.c_str());
         int speed2  = atoi(speed.c_str());
-        int mode2  = atoi(mode.c_str());
+        // int mode2  = atoi(mode.c_str());
             Serial.print("lamps: ");
             Serial.println(lampfirst + " " + lampsecond);
             Serial.print("speed: ");
             Serial.println(speed);
             Serial.println("mode: ");
             Serial.println(mode);
-            if (mode == 2){
+            if (mode == "2"){
             leds[lampfirst2].Blink(speed2, speed2).Forever().DelayBefore(speed2);
             leds[lampsecond2].Blink(speed2, speed2).Forever();
             EEPROM.update(lampfirst2, speed2); //store lamp + speed
             EEPROM.update(lampsecond2, speed2);
-            EEPROM.update(lampsecond2 + 100, mode2);
+            EEPROM.update(lampsecond2 + 100, 2);
+            EEPROM.update(lampsecond2 + 100, 3);
             }
           }
 
@@ -256,11 +278,10 @@ void setup() {
   digitalWrite(redLED, LOW);
   digitalWrite(greenLED, LOW);
   printUsage();
-  // leds[8] = JLed(8).Off();
-  // read(); // should load previous config from eeprom
 }
 
 void loop() {
+  read(); // should load previous config from eeprom
   customKey = customKeypad.getKey();
 
   if (customKey){
