@@ -153,7 +153,7 @@ void indicate(int _LED, int _wait) {
 bool validate_input(int _lamp, int _time) {
   bool valid_input;
 
-  if (_lamp <= MAX_NUM_LAMP && _time < MAX_TIME_JLED) {
+  if (_lamp <= MAX_NUM_LAMP && _time <= MAX_TIME_JLED) {
     Serial.println("Input valida");
     valid_input = true;
   } else if (_lamp > MAX_NUM_LAMP) {
@@ -202,7 +202,7 @@ void process_command() { //handler for input
   } else if (data_count == NUM_CHARS_TYPE_2) {
     // XX [LAMPARA] * YYY[TIEMPO_ON (ms)] * ZZZ[TIEMPO_OFF (s)] # (11)
     // E.G. 03*050*060# Lampara 03 con flasheos cada 60s de 50ms
-    Serial.println("Mode 2. Flasheo ocasional");
+    Serial.println("Modo 2. Flasheo ocasional");
     int lamp = atoi(readString.substring(0, 2).c_str());
 
     uint16_t on_time = atoi(readString.substring(3, 6).c_str());
@@ -230,7 +230,7 @@ void process_command() { //handler for input
   } else if (data_count == NUM_CHARS_TYPE_3){
     // XX [LAMPARA1] YY [LAMPARA2] * ZZ [TIEMPO_ON_OFF (ms)] # (8)
     // E.G. 0408*50# Lampara 04 y Lampara 08 con flasheo de 50ms alternando
-    Serial.println("Mode 3. Sync mode");
+    Serial.println("Modo 3. Mode alternado");
     int lamp_1 = atoi(readString.substring(0, 2).c_str());
     int lamp_2 = atoi(readString.substring(2, 4).c_str());
     uint16_t on_off_time = atoi(readString.substring(5, 7).c_str());
