@@ -117,15 +117,15 @@ void init_lamps_eeprom() {
   //We check if the ADDR_INIT_EEPROM is a known value, otherwise, return
   if (EEPROM.read(ADDR_INIT_EEPROM) != 0xff){
     return;
-  }
+  };
 
   // Iterate each saved lamp
   for (int i = 0; i <(MAX_NUM_LAMP-1)*5; i+=5) {
-    value _on_time_part_1 = EEPROM.read(i);
-    value _on_time_part_2 = EEPROM.read(i + 1);
-    value _off_time_part_1 = EEPROM.read(i + 2);
-    value _off_time_part_2 = EEPROM.read(i + 3);
-    value _synced_lamp = EEPROM.read(i + 4);
+    byte _on_time_part_1 = EEPROM.read(i);
+    byte _on_time_part_2 = EEPROM.read(i + 1);
+    byte _off_time_part_1 = EEPROM.read(i + 2);
+    byte _off_time_part_2 = EEPROM.read(i + 3);
+    byte _synced_lamp = EEPROM.read(i + 4);
 
     // Parse _on_time
     uint16_t _on_time = _on_time_part_1 << 8;
