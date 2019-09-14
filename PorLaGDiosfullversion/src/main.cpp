@@ -18,7 +18,7 @@ char alternate;
 //EEPROM
 int addr = 0;
 byte value;
-bool fHasLooped  = false;
+bool fHasLooped  = true;
 
 //INDICATORS
 int greenLED = 51;
@@ -45,7 +45,7 @@ enum led_list {
 };
 
 JLed leds[25] = {
-   JLed(0).Off(),
+  JLed(0).Off(),
   JLed(0).Off(),
   JLed(2).Off(),
   JLed(3).Off(),
@@ -98,18 +98,8 @@ JLedSequence sequence(JLedSequence::eMode::PARALLEL, leds);
 const char usageText[] PROGMEM = R"=====(
 Usage:
 input: int lamp int speed #  //always end with hashtag; E.G. 1223# lamp 12 speed of 23
-input range: int firstlamp int lastlamp int speedlamp // EG: 001200# lamp 00 till 12 speed of 0
-
-
-SYNC AND NOT: Concept
-Input is lamp,speed,
-speed <30 is 0-30s
-use last number to sync or not SYNC
-
-
-for example: 0112105#
-lamp 00 till 12 at speed 10s delay, sync mode 5;
-so you get 10 options of sync modes.
+input long: int lamp int speedlamp // EG: 12101# lamp 12 speed of 10 secs
+input alternate: int firstlamp int secondlamp int speedlamp // EG: 0012502# lamp 00 till 12 speed of 0
 Have a nice day.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 )=====";
@@ -126,16 +116,14 @@ void printUsage() {
 //     }
 // }
 
-void testwrite(void) { //for testing of writing to EEPROM , Update is better for long life EEPROM
-  for (int i = 0; i < 255; i++) {
-    EEPROM.update(i, i);
-  }
-}
+// void testwrite(void) { //for testing of writing to EEPROM , Update is better for long life EEPROM
+//   for (int i = 0; i < 255; i++) {
+//     EEPROM.update(i, i);
+//   }
+// }
 
 
 void read(void) { //reads/loads everything from EEPROM
-
-
       value = EEPROM.read(addr);
       // Serial.print(addr);
       // Serial.print("\t");
@@ -153,7 +141,6 @@ void read(void) { //reads/loads everything from EEPROM
           Serial.print("Speed ");
           Serial.print(speed);
           Serial.println();
-
         }
 
           if (i > 100) {
@@ -274,7 +261,7 @@ void process_command(void) { //handler for input
             leds[lampsecond2].Blink(speed2, speed2).Forever();
             EEPROM.update(lampfirst2, speed2); //store lamp + speed
             EEPROM.update(lampsecond2, speed2);
-            EEPROM.update(lampsecond2 + 100, 2);
+            EEPROM.update(lampfirst2 + 100, 2);
             EEPROM.update(lampsecond2 + 100, 3);
             }
           }
@@ -302,8 +289,9 @@ void setup() {
 
 void loop() {
   if (fHasLooped == false) {
-    for (int x = 0; x < 125; x++) {
-  read(); // should load previous config from eeprom
+    for (int x = 0; x != 125; x++) {
+      read(); // should load previous config from eeprom
+    delay(500);
     }
     fHasLooped = true;
   }
