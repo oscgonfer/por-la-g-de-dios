@@ -62,13 +62,8 @@ const char usageText[] PROGMEM = R"=====(
 Manual:
 
 Opcion 1: Lampara unica con flasheo continuo
-<<<<<<< HEAD
   XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms)] #
-  // E.G. 12*23# Lampara: 12, Tiempo_ON_OFF: 23
-=======
-  XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms)] #  
   // E.G. 12*23# Lampara: 12, Tiempo_ON_OFF: 23 ms
->>>>>>> Add EEPROM
 
 Opcion 2: Lampara unica con flasheo ocasional
   XX [LAMPARA] * YYY[TIEMPO_ON (ms)] * ZZZ[TIEMPO_OFF (s) - máximo 60s] #
@@ -77,6 +72,7 @@ Opcion 2: Lampara unica con flasheo ocasional
 Opcion 3: Dos lamparas con flasheo continuo, sincronizado
   XX [LAMPARA1] YY [LAMPARA2] * ZZ [TIEMPO_ON_OFF (ms)] #;
   // E.G. 0408*50# Lampara 04 y Lampara 08 con flasheo de 50ms alternando
+
 
 )=====";
 
@@ -120,14 +116,14 @@ void init_lamps_eeprom() {
   //We check if the ADDR_INIT_EEPROM is a known value, otherwise, return
   if (EEPROM.read(ADDR_INIT_EEPROM) != 0xff){
     return;
-  } 
+  }
 
   // Iterate each saved lamp
   for (int i = 0; i <(MAX_NUM_LAMP-1)*5; i+=5) {
     value _on_time_part_1 = EEPROM.read(i);
     value _on_time_part_2 = EEPROM.read(i + 1);
     value _off_time_part_1 = EEPROM.read(i + 2);
-    value _off_time_part_2 = EEPROM.read(i + 3);   
+    value _off_time_part_2 = EEPROM.read(i + 3);
     value _synced_lamp = EEPROM.read(i + 4);
 
     // Parse _on_time
@@ -220,7 +216,7 @@ void process_command() { //handler for input
 
     uint16_t on_time = atoi(readString.substring(3, 6).c_str());
     uint16_t off_time = atoi(readString.substring(7, 10).c_str());
-    
+
     if (validate_input(lamp, max(on_time, off_time*1000))) { // Off time is in seconds
 
       Serial.println("Lampara:" + String(lamp));
