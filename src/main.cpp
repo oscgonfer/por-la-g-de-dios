@@ -11,7 +11,6 @@
 #define NUM_CHARS_TYPE_3 8
 #define MAX_TIME_JLED 60000
 #define MAX_NUM_LAMP 16
-#define ADDR_INIT_EEPROM 100
 
 char keyPressed;
 byte data_count = 0;
@@ -82,12 +81,12 @@ void printUsage() {
 }
 
 int lamp_eeprom_addr(int _lamp_number) {
-  return (_lamp_number-1)*5;
+  return (_lamp_number-1)*6;
 }
 
 void save_lamp(int _eeprom_init_addr, uint16_t _on_time, uint16_t _off_time, byte _synced_lamp) { //updates addr with values 0-255
     // Pointless check
-    if (_eeprom_init_addr + 4 > EEPROM.length()) {
+    if (_eeprom_init_addr + 5 > EEPROM.length()) {
       return;
     }
 
@@ -103,48 +102,53 @@ void save_lamp(int _eeprom_init_addr, uint16_t _on_time, uint16_t _off_time, byt
 
     // Write all three things
     EEPROM.update(_eeprom_init_addr, _on_time_part_1);
+    delay(100);
     EEPROM.update(_eeprom_init_addr + 1 , _on_time_part_2);
+    delay(100);
     EEPROM.update(_eeprom_init_addr + 2, _off_time_part_1);
+    delay(100);
     EEPROM.update(_eeprom_init_addr + 3, _off_time_part_2);
+    delay(100);
     EEPROM.update(_eeprom_init_addr + 4, _synced_lamp);
+    delay(100);
 
-    // Update ADDR_INIT_EEPROM if necessary
-    EEPROM.update(ADDR_INIT_EEPROM, 0xff);
+    // Update addr for initialised eeprom if necessary
+    EEPROM.update(_eeprom_init_addr + 5, 0xff);
 }
 
 void init_lamps_eeprom() {
 
-  //We check if the ADDR_INIT_EEPROM is a known value, otherwise, return
-  if (EEPROM.read(ADDR_INIT_EEPROM) != 0xff){
-    return;
-  };
-
   // Iterate each saved lamp
-  for (int i = 0; i <(MAX_NUM_LAMP-1)*5; i+=5) {
-    byte _on_time_part_1 = EEPROM.read(i);
-    byte _on_time_part_2 = EEPROM.read(i + 1);
-    byte _off_time_part_1 = EEPROM.read(i + 2);
-    byte _off_time_part_2 = EEPROM.read(i + 3);
-    byte _synced_lamp = EEPROM.read(i + 4);
+  for (int i = 0; i <(MAX_NUM_LAMP-1)*6; i+=6) {
+    // We check if the i + 5 byte is a known value, otherwise skip lamp
+    int lamp = i/6 + 1;
+    if (EEPROM.read(i + 5) == 0xff){
+      byte _on_time_part_1 = EEPROM.read(i);
+      byte _on_time_part_2 = EEPROM.read(i + 1);
+      byte _off_time_part_1 = EEPROM.read(i + 2);
+      byte _off_time_part_2 = EEPROM.read(i + 3);
+      byte _synced_lamp = EEPROM.read(i + 4);
 
-    // Parse _on_time
-    uint16_t _on_time = _on_time_part_1 << 8;
-    _on_time += _on_time_part_2;
+      // Parse _on_time
+      uint16_t _on_time = _on_time_part_1 << 8;
+      _on_time += _on_time_part_2;
 
-    // Parse off_time
-    uint16_t _off_time = _off_time_part_1 << 8;
-    _off_time += _off_time_part_2;
+      // Parse off_time
+      uint16_t _off_time = _off_time_part_1 << 8;
+      _off_time += _off_time_part_2;
 
-    // Update LEDs (off time is in ms already)
-    int lamp = i/5 + 1;
-    Serial.println("Initialising EEPROM value for lamp" + String(lamp));
+      // Update LEDs (off time is in ms already)
+      Serial.println("Initialising EEPROM value for lamp" + String(lamp));
 
-    leds[lamp].Blink(_on_time, _off_time).Forever();
-    if (_synced_lamp != 0xff) {
-      delay(_on_time); // should be the same as _off_time
-      int lamp_2 = int(_synced_lamp);
-      Serial.println("Initialising EEPROM value for synced lamp" + String(lamp_2));
-      leds[lamp_2].Blink(_on_time, _off_time).Forever();
+      leds[lamp].Blink(_on_time, _off_time).Forever();
+      if (_synced_lamp != 0xff) {
+        delay(_on_time); // should be the same as _off_time
+        int lamp_2 = int(_synced_lamp);
+        Serial.println("Initialising EEPROM value for synced lamp" + String(lamp_2));
+        leds[lamp_2].Blink(_on_time, _off_time).Forever();
+      }
+    } else {
+      Serial.println("Lamp " + String(lamp) + " has never been init, skipping");
     }
   }
   Serial.println("Init Lamps done");
@@ -177,7 +181,7 @@ bool validate_input(int _lamp, int _time) {
   return valid_input;
 }
 
-void process_command() { //handler for input
+void process_command() {
   // Remove end character
   String string_raw = cmd;
   string_raw.replace("#","");
@@ -315,9 +319,6 @@ void loop() {
       clearData();
     }
   }
-
+  // Update the sequence
   sequence.Update();
-  // delay(1);
-  // leds.Update();
-  // for (auto& led : leds) {led.Update();}
 }
