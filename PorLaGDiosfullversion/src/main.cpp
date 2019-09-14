@@ -135,8 +135,7 @@ void testwrite(void) { //for testing of writing to EEPROM , Update is better for
 
 void read(void) { //reads/loads everything from EEPROM
 
-  if (fHasLooped == false) {
-    for (int x = 0; x < 125; x++) {
+
       value = EEPROM.read(addr);
       // Serial.print(addr);
       // Serial.print("\t");
@@ -151,7 +150,7 @@ void read(void) { //reads/loads everything from EEPROM
           leds[i].Blink(speed, speed).Forever();
           Serial.print("lamp ");
           Serial.print(i);
-          Serial.print("Speed");
+          Serial.print("Speed ");
           Serial.print(speed);
           Serial.println();
 
@@ -162,8 +161,11 @@ void read(void) { //reads/loads everything from EEPROM
             int mode = value;
             if (mode == 0) {
               leds[i].Blink(speed, speed).Forever();
+              Serial.print("mode ");
               Serial.print(mode);
+              Serial.print("lamp ");
               Serial.print(i);
+              Serial.print("speed ");
               Serial.print(speed);
               Serial.println();
 
@@ -175,7 +177,7 @@ void read(void) { //reads/loads everything from EEPROM
               Serial.print(speed);
               Serial.println();
 
-            } else if (value == 2 || value == 3) {
+            } else if (value == 2 | value == 3) {
 
               if (mode == 2) {
                 leds[i].Blink(speed, speed).Forever().DelayBefore(speed);
@@ -193,9 +195,6 @@ void read(void) { //reads/loads everything from EEPROM
           }
         }
       }
-    }
-   fHasLooped = true;
-  }
 }
 
 void clearData(){
@@ -302,7 +301,15 @@ void setup() {
 }
 
 void loop() {
+  if (fHasLooped == false) {
+    for (int x = 0; x < 125; x++) {
   read(); // should load previous config from eeprom
+    }
+    fHasLooped = true;
+  }
+
+
+
   customKey = customKeypad.getKey();
 
   if (customKey){
