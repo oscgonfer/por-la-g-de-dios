@@ -1,9 +1,9 @@
 # to Do
-- sync modes
+[x] sync modes
   - create alternating pulses using non blocking loop
-- ssr
-
-- avoid lamp > 16
+[] ssr - ???
+[x] avoid lamp > 16
+[] save to EEPROM
 
 
 - sudo chmod 666 /dev/ttyACM0
@@ -17,7 +17,6 @@
 - [Sorting numbers? which mode where](https://www.arduino.cc/reference/en/language/structure/control-structure/goto/)
 
 # Sorting for alternate mode etc
-
 
 void changePinState(int pin)
 // if pin reads LOW, set it HIGH
