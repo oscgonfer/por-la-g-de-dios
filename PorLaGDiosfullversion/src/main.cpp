@@ -16,11 +16,6 @@ char keyPressed;
 byte data_count = 0;
 char cmd[MAX_NUM_CHARS];
 
-//EEPROM
-int addr = 0;
-byte value;
-bool fHasLooped  = false;
-
 //INDICATORS
 int greenLED = 51;
 int redLED = 53;
@@ -66,8 +61,13 @@ const char usageText[] PROGMEM = R"=====(
 Manual:
 
 Opcion 1: Lampara unica con flasheo continuo
+<<<<<<< HEAD
   XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms)] #
   // E.G. 12*23# Lampara: 12, Tiempo_ON_OFF: 23
+=======
+  XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms)] #  
+  // E.G. 12*23# Lampara: 12, Tiempo_ON_OFF: 23 ms
+>>>>>>> Add EEPROM
 
 Opcion 2: Lampara unica con flasheo ocasional
   XX [LAMPARA] * YYY[TIEMPO_ON (ms)] * ZZZ[TIEMPO_OFF (s) - máximo 60s] #
@@ -83,42 +83,62 @@ void printUsage() {
   Serial.println((const __FlashStringHelper *)usageText);
 }
 
-void save() { //updates addr with values 0-255
-    EEPROM.update(addr, value);
-    addr = addr + 1;
-    if (addr == 200) {
-      addr = 0;
+int lamp_eeprom_addr(int _lamp_number) {
+  return (_lamp_number-1)*5;
+}
+
+void save_lamp(int _eeprom_init_addr, uint16_t _on_time, uint16_t _off_time, byte _synced_lamp) { //updates addr with values 0-255
+    // Pointless check
+    if (_eeprom_init_addr + 4 > EEPROM.length()) {
+      return;
     }
+
+    // Time can be up to uint16_t, or two bytes - Double check this with prints
+    // Get first part of _on_time
+    byte _on_time_part_1 = (_on_time >> 8) & 0xff;
+    // Get second part of _on_time
+    byte _on_time_part_2 = _on_time & 0xff;
+    // Get first part of _off_time
+    byte _off_time_part_1 = (_off_time >> 8) & 0xff;
+    // Get second part of _off_time
+    byte _off_time_part_2 = _off_time & 0xff;
+
+    // Write all three things
+    EEPROM.update(_eeprom_init_addr, _on_time_part_1);
+    EEPROM.update(_eeprom_init_addr + 1 , _on_time_part_2);
+    EEPROM.update(_eeprom_init_addr + 2, _off_time_part_1);
+    EEPROM.update(_eeprom_init_addr + 3, _off_time_part_2);
+    EEPROM.update(_eeprom_init_addr + 4, _synced_lamp);
 }
 
-void testwrite() { //for testing of writing to EEPROM , Update is better for long life EEPROM
-  for (int i = 0; i < 255; i++) {
-    EEPROM.update(i, i);
+void init_lamps_eeprom() {
+
+  // Iterate each saved lamp
+  for (int i = 0; i <(MAX_NUM_LAMP-1)*5; i+=5) {
+    byte _on_time_part_1 = EEPROM.read(i);
+    byte _on_time_part_2 = EEPROM.read(i + 1);
+    byte _off_time_part_1 = EEPROM.read(i + 2);
+    byte _off_time_part_2 = EEPROM.read(i + 3);   
+    byte _synced_lamp = EEPROM.read(i + 4);
+
+    // Parse _on_time
+    uint16_t _on_time = _on_time_part_1 << 8;
+    _on_time += _on_time_part_2;
+
+    // Parse off_time
+    uint16_t _off_time = _off_time_part_1 << 8;
+    _off_time += _off_time_part_2;
+
+    // Update LEDs (off time is in ms already)
+    int lamp = i/5 + 1;
+    leds[lamp].Blink(_on_time, _off_time).Forever();
+    if (_synced_lamp != 0xff) {
+      delay(_on_time); // should be the same as _off_time
+      int lamp_2 = int(_synced_lamp);
+      leds[lamp_2].Blink(_on_time, _off_time).Forever();
+    }
   }
 }
-
-void read() { //reads everything from EEPROM
-  value = EEPROM.read(addr);
-  Serial.print(addr);
-  Serial.print("\t");
-  Serial.print(value, DEC);
-  Serial.println();
-
-  /***
-    Advance to the next address, when at the end restart at the beginning.
-
-    Larger AVR processors have larger EEPROM sizes, E.g:
-    - Arduno Duemilanove: 512b EEPROM storage.
-    - Arduino Uno:        1kb EEPROM storage.
-    - Arduino Mega:       4kb EEPROM storage.
-
-    Rather than hard-coding the length, you should use the pre-provided length function.
-    This will make your code portable to all AVR processors.
-  ***/
-  address = address + 1;
-  if (address == EEPROM.length()) {
-    address = 0;
-  }
 
 void clearData(){
   while(data_count !=0){
@@ -134,13 +154,13 @@ bool validate_input(int _lamp, int _time) {
   bool valid_input;
 
   if (_lamp <= MAX_NUM_LAMP && _time < MAX_TIME_JLED) {
-    Serial.println("Valid input");
+    Serial.println("Input valida");
     valid_input = true;
   } else if (_lamp > MAX_NUM_LAMP) {
-    Serial.println("Number of lamp not valid");
+    Serial.println("Numero de lampara no valido");
     valid_input = false;
   } else if (_time > MAX_TIME_JLED) {
-    Serial.println("Number of lamp not valid");
+    Serial.println("Duracion no valida");
     valid_input = false;
   }
 
@@ -161,17 +181,20 @@ void process_command() { //handler for input
     Serial.println("Modo 1. Flasheo continuo");
 
     int lamp = atoi(readString.substring(0, 2).c_str());
-    int on_off_time = atoi(readString.substring(3, 5).c_str());
+    uint16_t on_off_time = atoi(readString.substring(3, 5).c_str());
 
     if (validate_input(lamp, on_off_time)){
       Serial.println("Lampara:" + String(lamp));
       Serial.println("Tiempo ON-OFF (ms):" + String(on_off_time));
       // Double check this
       leds[lamp].Blink(on_off_time,on_off_time).Forever();
-      // Save new confing in EEPROM
-      // ...
+      // Save new config in EEPROM
+      save_lamp(lamp_eeprom_addr(lamp), on_off_time, on_off_time, 0xff);
       clearData();
+      indicate(greenLED, indicatorTime);
     } else {
+      Serial.println("Invalid input");
+      indicate(redLED, indicatorTime);
       clearData();
       return;
     }
@@ -181,10 +204,12 @@ void process_command() { //handler for input
     // E.G. 03*050*060# Lampara 03 con flasheos cada 60s de 50ms
     Serial.println("Mode 2. Flasheo ocasional");
     int lamp = atoi(readString.substring(0, 2).c_str());
-    int on_time = atoi(readString.substring(3, 6).c_str());
-    int off_time = atoi(readString.substring(7, 10).c_str());
 
-    if (validate_input(lamp, max(on_time, off_time*1000))) {
+    uint16_t on_time = atoi(readString.substring(3, 6).c_str());
+    uint16_t off_time = atoi(readString.substring(7, 10).c_str());
+    
+    if (validate_input(lamp, max(on_time, off_time*1000))) { // Off time is in seconds
+
       Serial.println("Lampara:" + String(lamp));
       Serial.println("Tiempo ON (ms):" + String(on_time));
       // Off time is in seconds
@@ -192,9 +217,12 @@ void process_command() { //handler for input
 
       leds[lamp].Blink(on_time, off_time*1000).Forever();
       // Save new confing in EEPROM
-      // ...
+      save_lamp(lamp_eeprom_addr(lamp), on_time, off_time, 0xff);
       clearData();
+      indicate(greenLED, indicatorTime);
     } else {
+      Serial.println("Invalid input");
+      indicate(redLED, indicatorTime);
       clearData();
       return;
     }
@@ -205,7 +233,7 @@ void process_command() { //handler for input
     Serial.println("Mode 3. Sync mode");
     int lamp_1 = atoi(readString.substring(0, 2).c_str());
     int lamp_2 = atoi(readString.substring(2, 4).c_str());
-    int on_off_time = atoi(readString.substring(5, 7).c_str());
+    uint16_t on_off_time = atoi(readString.substring(5, 7).c_str());
 
     if (validate_input(max(lamp_1, lamp_2), on_off_time)) {
       Serial.println("Lampara 01:" + String(lamp_1));
@@ -216,18 +244,23 @@ void process_command() { //handler for input
       leds[lamp_1].Blink(on_off_time, on_off_time).Forever();
       delay(on_off_time);
       leds[lamp_2].Blink(on_off_time, on_off_time).Forever();
-      // Save new confing in EEPROM
-      // ...
+
+      // Save new confing in EEPROM (always save the )
+      save_lamp(lamp_eeprom_addr(min(lamp_1, lamp_2)), on_off_time, on_off_time, byte(max(lamp_1, lamp_2)));
       clearData();
+      indicate(greenLED, indicatorTime);
     } else {
+      Serial.println("Invalid input");
+      indicate(redLED, indicatorTime);
       clearData();
       return;
     }
 
   } else {
     Serial.println("Unkown mode!");
-    clearData();
     indicate(redLED, indicatorTime);
+    clearData();
+    return;
   }
 }
 
@@ -242,10 +275,8 @@ void setup() {
 
   printUsage();
 
-  // leds[8] = JLed(8).Off();
-
   // Read previously saved EEPROM commands
-  // read(); // should load previous config from eeprom
+  init_lamps_eeprom();
 }
 
 void loop() {
@@ -268,6 +299,8 @@ void loop() {
 
     // If we surpass max number of chars, clear data
     if (data_count > MAX_NUM_CHARS) {
+      Serial.println("Command too long without end character");
+      indicate(redLED, indicatorTime);
       clearData();
     }
   }
