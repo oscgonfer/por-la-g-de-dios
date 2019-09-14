@@ -62,7 +62,7 @@ const char usageText[] PROGMEM = R"=====(
 Manual:
 
 Opcion 1: Lampara unica con flasheo continuo
-  XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms)] #
+  XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms)] #  
   // E.G. 12*23# Lampara: 12, Tiempo_ON_OFF: 23 ms
 
 Opcion 2: Lampara unica con flasheo ocasional
@@ -75,6 +75,7 @@ Opcion 3: Dos lamparas con flasheo continuo, sincronizado
 
 
 )=====";
+
 
 void printUsage() {
   Serial.println((const __FlashStringHelper *)usageText);
