@@ -6,9 +6,10 @@
 
 //Commands
 #define MAX_NUM_CHARS 11
-#define NUM_CHARS_TYPE_1 7
+#define NUM_CHARS_TYPE_1 6
 #define NUM_CHARS_TYPE_2 11
-#define NUM_CHARS_TYPE_3 8
+#define NUM_CHARS_TYPE_3 9
+#define NUM_CHARS_RESET 4
 #define MAX_TIME_JLED 60000
 #define MAX_NUM_LAMP 16
 
@@ -61,16 +62,19 @@ const char usageText[] PROGMEM = R"=====(
 Manual:
 
 Opcion 1: Lampara unica con flasheo continuo
-  XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms)] #  
+  XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms) - maximo 250ms] #  
   // E.G. 12*23# Lampara: 12, Tiempo_ON_OFF: 23 ms
 
 Opcion 2: Lampara unica con flasheo ocasional
-  XX [LAMPARA] * YYY[TIEMPO_ON (ms)] * ZZZ[TIEMPO_OFF (s) - máximo 60s] #
+  XX [LAMPARA] * YYY[TIEMPO_ON (ms) - maximo 250ms] * ZZZ[TIEMPO_OFF (s) - máximo 60s] #
   // E.G. 03*050*060# Lampara 03 con flasheos cada 60s de 50ms
 
 Opcion 3: Dos lamparas con flasheo continuo, sincronizado
-  XX [LAMPARA1] YY [LAMPARA2] * ZZ [TIEMPO_ON_OFF (ms)] #;
-  // E.G. 0408*50# Lampara 04 y Lampara 08 con flasheo de 50ms alternando
+  XX [LAMPARA1] YY [LAMPARA2] * ZZZ [TIEMPO_ON_OFF (ms) - maximo 250ms ] #;
+  // E.G. 0408*050# Lampara 04 y Lampara 08 con flasheo de 50ms alternando
+
+Opcion 4: RESET de memoria
+  ***#
 
 
 )=====";
@@ -89,7 +93,7 @@ void save_lamp(int _eeprom_init_addr, uint16_t _on_time, uint16_t _off_time, byt
     if (_eeprom_init_addr + 5 > EEPROM.length()) {
       return;
     }
-
+    
     // Time can be up to uint16_t, or two bytes - Double check this with prints
     // Get first part of _on_time
     byte _on_time_part_1 = (_on_time >> 8) & 0xff;
@@ -120,8 +124,9 @@ void init_lamps_eeprom() {
 
   // Iterate each saved lamp
   for (int i = 0; i <(MAX_NUM_LAMP-1)*6; i+=6) {
-    // We check if the i + 5 byte is a known value, otherwise skip lamp
     int lamp = i/6 + 1;
+
+    // We check if the i + 5 byte is a known value, otherwise skip lamp
     if (EEPROM.read(i + 5) == 0xff){
       byte _on_time_part_1 = EEPROM.read(i);
       byte _on_time_part_2 = EEPROM.read(i + 1);
@@ -138,14 +143,16 @@ void init_lamps_eeprom() {
       _off_time += _off_time_part_2;
 
       // Update LEDs (off time is in ms already)
-      Serial.println("Initialising EEPROM value for lamp" + String(lamp));
-
+      Serial.println("Initialising EEPROM value for lamp " + String(lamp));
+      Serial.println("ON Time (ms): " + String(_on_time));
+      Serial.println("OFF (ms): " + String(_off_time));  
+      // Make first lamp blink
       leds[lamp].Blink(_on_time, _off_time).Forever();
+      // Check if there is a synced lamp
       if (_synced_lamp != 0xff) {
-        delay(_on_time); // should be the same as _off_time
         int lamp_2 = int(_synced_lamp);
-        Serial.println("Initialising EEPROM value for synced lamp" + String(lamp_2));
-        leds[lamp_2].Blink(_on_time, _off_time).Forever();
+        Serial.println("Initialising EEPROM value for synced lamp " + String(lamp_2));
+        leds[lamp_2].Blink(_on_time, _off_time).Forever().DelayBefore(_on_time);
       }
     } else {
       Serial.println("Lamp " + String(lamp) + " has never been init, skipping");
@@ -181,12 +188,18 @@ bool validate_input(int _lamp, int _time) {
   return valid_input;
 }
 
+void EEPROM_clear(){
+  for (int i = 0 ; i < EEPROM.length() ; i++) {
+    EEPROM.write(i, 0);
+  }
+}
+
 void process_command() {
   // Remove end character
   String string_raw = cmd;
   string_raw.replace("#","");
   String readString = string_raw;
-  Serial.println("Comando recibido:" + readString);
+  Serial.println("Comando recibido: " + readString);
 
   // Check which mode we are at
   if (data_count == NUM_CHARS_TYPE_1){
@@ -198,8 +211,8 @@ void process_command() {
     uint16_t on_off_time = atoi(readString.substring(3, 5).c_str());
 
     if (validate_input(lamp, on_off_time)){
-      Serial.println("Lampara:" + String(lamp));
-      Serial.println("Tiempo ON-OFF (ms):" + String(on_off_time));
+      Serial.println("Lampara: " + String(lamp));
+      Serial.println("Tiempo ON-OFF (ms): " + String(on_off_time));
       // Double check this
       leds[lamp].Blink(on_off_time,on_off_time).Forever();
       // Save new config in EEPROM
@@ -224,14 +237,14 @@ void process_command() {
 
     if (validate_input(lamp, max(on_time, off_time*1000))) { // Off time is in seconds
 
-      Serial.println("Lampara:" + String(lamp));
-      Serial.println("Tiempo ON (ms):" + String(on_time));
+      Serial.println("Lampara: " + String(lamp));
+      Serial.println("Tiempo ON (ms): " + String(on_time));
       // Off time is in seconds
-      Serial.println("Tiempo OFF (s):" + String(off_time));
+      Serial.println("Tiempo OFF (s): " + String(off_time));
 
       leds[lamp].Blink(on_time, off_time*1000).Forever();
       // Save new confing in EEPROM
-      save_lamp(lamp_eeprom_addr(lamp), on_time, off_time, 0xff);
+      save_lamp(lamp_eeprom_addr(lamp), on_time, off_time*1000, 0xff);
       clearData();
       indicate(greenLED, indicatorTime);
     } else {
@@ -247,17 +260,16 @@ void process_command() {
     Serial.println("Modo 3. Mode alternado");
     int lamp_1 = atoi(readString.substring(0, 2).c_str());
     int lamp_2 = atoi(readString.substring(2, 4).c_str());
-    uint16_t on_off_time = atoi(readString.substring(5, 7).c_str());
+    uint16_t on_off_time = atoi(readString.substring(5, 8).c_str());
 
     if (validate_input(max(lamp_1, lamp_2), on_off_time)) {
-      Serial.println("Lampara 01:" + String(lamp_1));
-      Serial.println("Lampara 02:" + String(lamp_2));
-      Serial.println("Tiempo ON-OFF (ms):" + String(on_off_time));
+      Serial.println("Lampara 01: " + String(lamp_1));
+      Serial.println("Lampara 02: " + String(lamp_2));
+      Serial.println("Tiempo ON-OFF (ms): " + String(on_off_time));
 
       // Let see if this works
       leds[lamp_1].Blink(on_off_time, on_off_time).Forever();
-      delay(on_off_time);
-      leds[lamp_2].Blink(on_off_time, on_off_time).Forever();
+      leds[lamp_2].Blink(on_off_time, on_off_time).Forever().DelayBefore(on_off_time);
 
       // Save new confing in EEPROM (always save the )
       save_lamp(lamp_eeprom_addr(min(lamp_1, lamp_2)), on_off_time, on_off_time, byte(max(lamp_1, lamp_2)));
@@ -269,7 +281,15 @@ void process_command() {
       clearData();
       return;
     }
-
+  } else if (data_count == NUM_CHARS_RESET) {
+    // Memory erase
+    if (readString == "***") {
+      Serial.println("Borrando memoria");
+      EEPROM_clear();
+      indicate(greenLED, indicatorTime);
+      clearData();
+      return;
+    } 
   } else {
     Serial.println("Modo desconocido!");
     indicate(redLED, indicatorTime);
@@ -300,13 +320,14 @@ void loop() {
   // If we have something in key, do something with it
   if (keyPressed){
     // Print the key
-    Serial.println(keyPressed); //print input
+    Serial.print(keyPressed); //print input
     // Add it to the command
     cmd[data_count] = keyPressed;
     // Increase the count
     data_count++;
     // Check our 'master-key'
     if(keyPressed == '#') {
+      Serial.println("");
       // We can only finish a command with a #
       process_command();
       clearData();
@@ -314,6 +335,7 @@ void loop() {
 
     // If we surpass max number of chars, clear data
     if (data_count > MAX_NUM_CHARS) {
+      Serial.println("");
       Serial.println("Comando demasiado largo sin caracter #");
       indicate(redLED, indicatorTime);
       clearData();
