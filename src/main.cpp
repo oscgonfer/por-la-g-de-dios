@@ -6,7 +6,7 @@
 
 //Commands
 #define MAX_NUM_CHARS 11
-#define NUM_CHARS_TYPE_1 6
+#define NUM_CHARS_TYPE_1 7
 #define NUM_CHARS_TYPE_2 11
 #define NUM_CHARS_TYPE_3 9
 #define NUM_CHARS_RESET 4
@@ -18,24 +18,26 @@ byte data_count = 0;
 char cmd[MAX_NUM_CHARS];
 
 //INDICATORS
-int greenLED = 51;
-int redLED = 53;
-int indicatorTime = 100;
+int greenLED = 34;
+int redLED = 32;
+int indicatorTime = 1000;
 
-enum led_list {
-  pin_22, pin_23, pin_24, pin_2, pin_3,
-  pin_4, pin_5, pin_6, pin_7, pin_8,
-  pin_9, pin_10, pin_11, pin_12, pin_13, pin_14
-};
+// enum led_list {
+//   pin_22, pin_23, pin_24, pin_2, pin_3,
+//   pin_4, pin_5, pin_6, pin_7, pin_8,
+//   pin_9, pin_10, pin_11, pin_12, pin_13, pin_14
+// };
 
 // Define leds
-JLed leds[25] = { JLed(0).Off(), JLed(0).Off(), JLed(2).Off(),
-  JLed(3).Off(), JLed(4).Off(), JLed(5).Off(), JLed(6).Off(),
-  JLed(7).Off(), JLed(8).Off(), JLed(9).Off(), JLed(10).Off(),
-  JLed(11).Off(), JLed(12).Off(), JLed(13).Off(), JLed(14).Off(),
-  JLed(0).Off(), JLed(0).Off(), JLed(0).Off(), JLed(0).Off(),
-  JLed(0).Off(), JLed(0).Off(), JLed(0).Off(), JLed(22).Off(),
-  JLed(23).Off(), JLed(24).Off()
+JLed leds[35] = { JLed(0).On(), JLed(13).On(), JLed(12).On(),
+  JLed(11).On(), JLed(10).On(), JLed(9).On(), JLed(8).On(),
+  JLed(7).On(), JLed(6).On(), JLed(5).On(), JLed(4).On(),
+  JLed(3).On(), JLed(2).On(), JLed(22).On(), JLed(24).On(),
+  JLed(26).On(), JLed(28).On(), JLed(0).On(), JLed(0).On(),
+  JLed(0).On(), JLed(0).On(), JLed(0).On(), JLed(0).On(),
+  JLed(0).On(), JLed(0).On(), JLed(0).On(), JLed(0).On(), 
+  JLed(0).On(), JLed(0).On(), JLed(0).On(), JLed(0).On(), 
+  JLed(0).On(), JLed(32).Off(), JLed(0).On(), JLed(34).Off()
 };
 
 // Keypad
@@ -56,14 +58,15 @@ byte colPins[COLS] = {44, 42, 40};
 Keypad customKeypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 JLedSequence sequence(JLedSequence::eMode::PARALLEL, leds);
+JLedSequence led_breathe(JLedSequence::eMode::PARALLEL, leds);
 
 // Usage menu
 const char usageText[] PROGMEM = R"=====(
 Manual:
 
 Opcion 1: Lampara unica con flasheo continuo
-  XX [LAMPARA] * YYY [TIEMPO_ON_OFF (ms) - maximo 250ms] #  
-  // E.G. 12*23# Lampara: 12, Tiempo_ON_OFF: 23 ms
+  XX [LAMPARA] * YYY [TIEMPO_ON_On (ms) - maximo 250ms] #  
+  // E.G. 12*023# Lampara: 12, Tiempo_ON_OFF: 23 ms
 
 Opcion 2: Lampara unica con flasheo ocasional
   XX [LAMPARA] * YYY[TIEMPO_ON (ms) - maximo 250ms] * ZZZ[TIEMPO_OFF (s) - máximo 60s] #
@@ -147,12 +150,12 @@ void init_lamps_eeprom() {
       Serial.println("ON Time (ms): " + String(_on_time));
       Serial.println("OFF (ms): " + String(_off_time));  
       // Make first lamp blink
-      leds[lamp].Blink(_on_time, _off_time).Forever();
+      leds[lamp].Blink(_off_time, _on_time).Forever();
       // Check if there is a synced lamp
       if (_synced_lamp != 0xff) {
         int lamp_2 = int(_synced_lamp);
         Serial.println("Initialising EEPROM value for synced lamp " + String(lamp_2));
-        leds[lamp_2].Blink(_on_time, _off_time).Forever().DelayBefore(_on_time);
+        leds[lamp_2].Blink(_off_time, _on_time).Forever().DelayBefore(_on_time);
       }
     } else {
       Serial.println("Lamp " + String(lamp) + " has never been init, skipping");
@@ -168,7 +171,8 @@ void clearData(){
 }
 
 void indicate(int _LED, int _wait) {
-  JLed(_LED).Blink(_wait, _wait).Repeat(3);
+  // JLed(_LED).Blink(_wait, _wait).Repeat(3);
+  leds[_LED].Breathe(_wait).Repeat(3);
 }
 
 bool validate_input(int _lamp, int _time) {
@@ -208,13 +212,13 @@ void process_command() {
     Serial.println("Modo 1. Flasheo continuo");
 
     int lamp = atoi(readString.substring(0, 2).c_str());
-    uint16_t on_off_time = atoi(readString.substring(3, 5).c_str());
+    uint16_t on_off_time = atoi(readString.substring(3, 6).c_str());
 
     if (validate_input(lamp, on_off_time)){
       Serial.println("Lampara: " + String(lamp));
       Serial.println("Tiempo ON-OFF (ms): " + String(on_off_time));
       // Double check this
-      leds[lamp].Blink(on_off_time,on_off_time).Forever();
+      leds[lamp].Blink(on_off_time, on_off_time).Forever();
       // Save new config in EEPROM
       save_lamp(lamp_eeprom_addr(lamp), on_off_time, on_off_time, 0xff);
       clearData();
@@ -242,7 +246,7 @@ void process_command() {
       // Off time is in seconds
       Serial.println("Tiempo OFF (s): " + String(off_time));
 
-      leds[lamp].Blink(on_time, off_time*1000).Forever();
+      leds[lamp].Blink(off_time*1000, on_time).Forever();
       // Save new confing in EEPROM
       save_lamp(lamp_eeprom_addr(lamp), on_time, off_time*1000, 0xff);
       clearData();
@@ -289,7 +293,7 @@ void process_command() {
       indicate(greenLED, indicatorTime);
       clearData();
       return;
-    } 
+    }  
   } else {
     Serial.println("Modo desconocido!");
     indicate(redLED, indicatorTime);
@@ -304,6 +308,16 @@ void setup() {
   // Init Leds
   pinMode(redLED, OUTPUT);
   pinMode(greenLED, OUTPUT);
+  digitalWrite(redLED, LOW);
+  digitalWrite(greenLED, LOW);
+
+  delay(1000);
+
+  digitalWrite(redLED, HIGH);
+  digitalWrite(greenLED, HIGH);
+
+  delay(1000);
+
   digitalWrite(redLED, LOW);
   digitalWrite(greenLED, LOW);
 
