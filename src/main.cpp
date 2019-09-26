@@ -9,6 +9,7 @@
 #define NUM_CHARS_TYPE_1 7
 #define NUM_CHARS_TYPE_2 11
 #define NUM_CHARS_TYPE_3 9
+#define NUM_CHARS_TYPE_4 10
 #define NUM_CHARS_RESET 4
 #define MAX_TIME_JLED 60000
 #define MAX_NUM_LAMP 16
@@ -30,10 +31,10 @@ int indicatorTime = 1000;
 
 // Define leds
 JLed leds[35] = { JLed(0).On(), JLed(13).On(), JLed(12).On(),
-  JLed(11).On(), JLed(10).On(), JLed(9).On(), JLed(8).On(),
-  JLed(7).On(), JLed(6).On(), JLed(5).On(), JLed(4).On(),
+  JLed(28).On(), JLed(10).On(), JLed(9).On(), JLed(8).On(),
+  JLed(7).On(), JLed(26).On(), JLed(5).On(), JLed(4).On(),
   JLed(3).On(), JLed(2).On(), JLed(22).On(), JLed(24).On(),
-  JLed(26).On(), JLed(28).On(), JLed(0).On(), JLed(0).On(),
+  JLed(0).On(), JLed(28).On(), JLed(0).On(), JLed(0).On(),
   JLed(0).On(), JLed(0).On(), JLed(0).On(), JLed(0).On(),
   JLed(0).On(), JLed(0).On(), JLed(0).On(), JLed(0).On(), 
   JLed(0).On(), JLed(0).On(), JLed(0).On(), JLed(0).On(), 
@@ -65,20 +66,23 @@ const char usageText[] PROGMEM = R"=====(
 Manual:
 
 Opcion 1: Lampara unica con flasheo continuo
-  XX [LAMPARA] * YYY [TIEMPO_ON_On (ms) - maximo 250ms] #  
-  // E.G. 12*023# Lampara: 12, Tiempo_ON_OFF: 23 ms
+  XX [LAMPARA] * YYY [TIEMPO_ON_On (ms)] #  
+  // E.G. 12*023# Lampara: 12 con tiempo_ON_OFF: 23 ms
 
-Opcion 2: Lampara unica con flasheo ocasional
-  XX [LAMPARA] * YYY[TIEMPO_ON (ms) - maximo 250ms] * ZZZ[TIEMPO_OFF (s) - máximo 60s] #
+Opcion 2: Rango de lamparas con flasheo continuo
+  XX [LAMPARA 1] * YY [LAMPARA 2] * ZZZ [TIEMPO_ON_On (ms)] # - 10
+  // E.G: 03*09*200# Desde lampara 03 a lampara 09 (ambas incluidas, con) tiempo 200ms
+
+Opcion 3: Lampara unica con flasheo ocasional
+  XX [LAMPARA] * YYY[TIEMPO_ON (ms)] * ZZZ[TIEMPO_OFF (s) - máximo 60s] #
   // E.G. 03*050*060# Lampara 03 con flasheos cada 60s de 50ms
 
-Opcion 3: Dos lamparas con flasheo continuo, sincronizado
-  XX [LAMPARA1] YY [LAMPARA2] * ZZZ [TIEMPO_ON_OFF (ms) - maximo 250ms ] #;
+Opcion 4: Dos lamparas con flasheo continuo, sincronizado
+  XX [LAMPARA1] YY [LAMPARA2] * ZZZ [TIEMPO_ON_OFF (ms) ] #;
   // E.G. 0408*050# Lampara 04 y Lampara 08 con flasheo de 50ms alternando
 
-Opcion 4: RESET de memoria
+Opcion 5: RESET de memoria
   ***#
-
 
 )=====";
 
@@ -229,8 +233,32 @@ void process_command() {
       clearData();
       return;
     }
-
   } else if (data_count == NUM_CHARS_TYPE_2) {
+    // XX [LAMPARA 1] * YY [LAMPARA 2] * ZZZ [TIEMPO_ON_On (ms)] # - (10)
+    // E.G: 03*09*200# Desde lampara 03 a lampara 09 (ambas incluidas, con) tiempo 200ms
+    
+    Serial.println("Modo 1. Flasheo continuo - rango de lamparas");
+
+    int from_lamp = atoi(readString.substring(0, 2).c_str());
+    int to_lamp = atoi(readString.substring(3, 5).c_str());
+    int on_off_time = atoi(readString.substring(6, 9).c_str());
+
+    if (validate_input(max(from_lamp, to_lamp), on_off_time)) {
+      for (int i = from_lamp; i<=to_lamp; i++) {
+
+        Serial.println("Lampara:" + String(i));
+        Serial.println("Tiempo ON-OFF (ms): " + String(on_off_time));
+
+        leds[i].Blink(on_off_time, on_off_time).Forever();
+
+        // Save new config in EEPROM
+        save_lamp(lamp_eeprom_addr(i), on_off_time, on_off_time, 0xff);
+        clearData();
+        indicate(greenLED, indicatorTime);
+      }
+    }
+
+  } else if (data_count == NUM_CHARS_TYPE_3) {
     // XX [LAMPARA] * YYY[TIEMPO_ON (ms)] * ZZZ[TIEMPO_OFF (s)] # (11)
     // E.G. 03*050*060# Lampara 03 con flasheos cada 60s de 50ms
     Serial.println("Modo 2. Flasheo ocasional");
@@ -258,10 +286,10 @@ void process_command() {
       return;
     }
 
-  } else if (data_count == NUM_CHARS_TYPE_3){
+  } else if (data_count == NUM_CHARS_TYPE_4){
     // XX [LAMPARA1] YY [LAMPARA2] * ZZ [TIEMPO_ON_OFF (ms)] # (8)
     // E.G. 0408*50# Lampara 04 y Lampara 08 con flasheo de 50ms alternando
-    Serial.println("Modo 3. Mode alternado");
+    Serial.println("Modo 3. Modo alternado");
     int lamp_1 = atoi(readString.substring(0, 2).c_str());
     int lamp_2 = atoi(readString.substring(2, 4).c_str());
     uint16_t on_off_time = atoi(readString.substring(5, 8).c_str());
